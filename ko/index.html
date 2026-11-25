@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>외란 관측기를 적용한 반작용 휠 기반 셀프 밸런싱 큐브의 자세 제어</title>
+<link rel="alternate" hreflang="en" href="https://coolab-inu.github.io/cube_dob/">
+<link rel="alternate" hreflang="ko" href="https://coolab-inu.github.io/cube_dob/ko/">
+<style>html,body{margin:0;background:#07080b}</style>
+</head>
+<body>
+<script>
+// This address shows the page one folder up (../index.html) in Korean. The page is read and written in here with
+// <base href="../">, so its videos and data load from there and only that one file is kept up to date.
+(function () {
+  function fallback() { location.replace('../'); }
+  if (!window.fetch) return fallback();
+  fetch('../index.html', { cache: 'no-cache' }).then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.text();
+  }).then(function (html) {
+    var head = /<head[^>]*>/i.exec(html);
+    if (!head) throw new Error('no head');
+    var at = head.index + head[0].length;
+    html = html.slice(0, at) + '<base href="../">' + html.slice(at);
+    document.open(); document.write(html); document.close();
+    // Links to a part of the page (#results) stay on this address; through the <base> they would open ../#results.
+    document.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      var h = a.getAttribute('href'), el = h.length > 1 && document.getElementById(decodeURIComponent(h.slice(1)));
+      e.preventDefault();
+      if (location.hash === h && el) el.scrollIntoView(); else location.hash = h;
+    });
+    // an address with a part in it, .../ko/#results, opens there
+    var id = decodeURIComponent(location.hash.slice(1)), el = id && document.getElementById(id);
+    if (el) el.scrollIntoView();
+  }).catch(fallback);
+})();
+</script>
+</body>
+</html>

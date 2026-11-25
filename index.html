@@ -1,5 +1,7 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Self-Balancing Cube with a DOB</title>
+<link rel="alternate" hreflang="en" href="https://coolab-inu.github.io/cube_dob/">
+<link rel="alternate" hreflang="ko" href="https://coolab-inu.github.io/cube_dob/ko/">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -597,14 +599,16 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   // language toggle
   const langBtn = document.getElementById('langBtn'), TR = [...document.querySelectorAll('[data-ko]')];
   TR.forEach(e => e.dataset.en = e.innerHTML);
+  const TITLE = { en: document.title, ko: '외란 관측기를 적용한 반작용 휠 기반 셀프 밸런싱 큐브의 자세 제어' };
   function setLang(l) {
-    LANG = l; document.documentElement.lang = l;
+    LANG = l; document.documentElement.lang = l; document.title = TITLE[l];
     TR.forEach(e => e.innerHTML = l === 'ko' ? e.dataset.ko : e.dataset.en);
     langBtn.textContent = l === 'ko' ? 'EN' : '한국어'; drawRows();
   }
   langBtn.addEventListener('click', () => setLang(LANG === 'ko' ? 'en' : 'ko'));
   try { localStorage.removeItem('cubli-lang'); } catch (e) {}
-  setLang('ko');
+  // the address picks the language: .../ko/ is Korean; .../ and .../en/ are English (the button still switches in place)
+  setLang(/\/ko\/(index\.html)?$/.test(location.pathname) ? 'ko' : 'en');
 
 
   // ---------- progressive plots ----------
