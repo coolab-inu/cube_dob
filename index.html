@@ -50,10 +50,14 @@ a { color: inherit; }
 @media (min-width: 561px) { .bar .lang { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); } .bar nav { margin-right: max(0px, calc(88px - max(16px, (100vw - 1180px) / 2 + 16px))); } }
 .lang:hover, .lang:focus-visible { color: var(--fg); border-color: var(--soft); }
 .brand { order: 1; } .bar nav { order: 2; margin-left: auto; }
+.bar .brand { flex: none; } .bar .brand img { display: block; height: 34px; width: auto; }
+@media (max-width: 560px) { .bar .wrap { gap: 12px !important; } .bar .brand { order: 0; } .bar .brand img { height: 24px; } .bar nav { flex: 0 1 auto !important; margin-left: auto !important; gap: 12px !important; } .lang { margin-left: 0 !important; } }
+@media (min-width: 561px) { .bar nav { margin-left: auto !important; } }
 html[lang="ko"] body { word-break: keep-all; }
 .h1sub { color: var(--soft); }
 .concl { margin: 22px 0 0; max-width: 680px; color: var(--fg); font-size: 16px; }
 .bar nav a:hover, .bar nav a:focus-visible { color: var(--fg); }
+.bar nav a { transition: color .25s; } .bar nav a.on { color: #fff !important; font-weight: 600; }
 
 /* hero */
 .hero { position: relative; min-height: min(88vh, 820px); display: flex; align-items: center; overflow: hidden; }
@@ -69,6 +73,7 @@ html[lang="ko"] body { word-break: keep-all; }
 .hero .wrap { position: relative; z-index: 2; width: 100%; padding-block: 96px 64px; }
 .eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--fg); display: inline-flex; gap: 10px; align-items: center; }
 .eyebrow::before { content: ""; width: 26px; height: 1px; flex: none; background: var(--fg); }
+html[lang="ko"] h1 { line-height: 1.22; letter-spacing: -.02em; }
 h1 { text-shadow: 0 2px 30px rgba(7,8,11,.6); font-family: var(--font-head); font-size: clamp(30px, 4.4vw, 62px); line-height: 1.04; letter-spacing: -.03em; font-weight: 700; margin: 16px 0 0; }
 .hero .lede { text-shadow: 0 1px 14px rgba(7,8,11,.9); max-width: 52ch !important; margin: 22px 0 0; color: var(--soft); font-size: 17px; max-width: 58ch; }
 .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 40px; border-top: 1px solid var(--line2); max-width: 640px; }
@@ -205,9 +210,33 @@ tbody tr.grp:first-child th { padding-top: 14px; }
 .axov .arc { fill: none; stroke-width: 3; }
 .axov .off .live, .axov .off .arc { stroke: var(--off); } .axov .on .live, .axov .on .arc { stroke: var(--on); }
 .axov .piv { fill: #fff; }
+.swst { aspect-ratio: 16 / 9; }
+@media (max-width: 560px) { .swst { aspect-ratio: 4 / 3; } }
+.subh { font-family: var(--font-head); font-size: clamp(22px, 2.4vw, 30px); font-weight: 700; letter-spacing: -.02em; margin: 0 0 10px; }
+.swph { position: absolute; left: 18px; top: 14px; z-index: 4; display: flex; gap: 8px; align-items: baseline; font: 500 15px var(--font-body); color: var(--muted); pointer-events: none; }
+.hint { position: absolute; top: 14px; right: 16px; z-index: 4; font-size: 12px; color: var(--muted); pointer-events: none; }
+.vs.swvs.sb { top: auto; bottom: 12px; }
+.vs.swvs { top: 14px; right: 14px; z-index: 4; }
+@media (max-width: 560px) { .vs.swvs { display: inline-flex !important; top: 10px; right: 10px; } .vs.swvs.sb { top: auto; bottom: 10px; } }
+.swph b { font-weight: 500; transition: color .2s; } .swph b.on { color: #fff; font-weight: 600; } .swph em { font-style: normal; opacity: .5; }
+#stage .wl i { display: none !important; }
+#stage .wl b { color: inherit !important; font-size: 13px !important; font-weight: 500 !important; min-width: 0 !important; }
+#stage .wl small { font-size: 13px !important; color: inherit !important; font-weight: 500 !important; }
+@media (max-width: 560px) { #stage .wl b, #stage .wl small { font-size: 12px !important; } #stage .wl { flex-direction: row !important; align-items: baseline !important; gap: 4px !important; } }
+html[lang="ko"] .stat .lbl, html[lang="ko"] .rk, html[lang="ko"] .plot .hd h3 { letter-spacing: .02em; }
+.axov .pref { stroke: rgba(255,255,255,.85); stroke-width: 3; stroke-dasharray: 12 9; }
+.axov .plive { stroke-width: 6; stroke-linecap: round; }
+.axov .off .plive { stroke: var(--off); } .axov .on .plive { stroke: var(--on); }
+.axov .ang { font: 600 40px var(--font-body); stroke: none; font-variant-numeric: tabular-nums; }
+.axov .off .ang { fill: var(--off); } .axov .on .ang { fill: var(--on); }
 .axov .mag { font: 500 18px var(--font-body); fill: rgba(255,255,255,.55); }
 .vb, .vs { position: absolute; top: 2.4%; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; background: rgba(7,8,11,.78); color: var(--fg); font-size: clamp(10px, 1.25vw, 14px); font-weight: 500; line-height: 1.2; pointer-events: none; }
 .vb i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.vb { font-size: clamp(12px, 1.9vw, 22px) !important; font-weight: 700 !important; padding: .28em .62em !important; gap: .45em !important; background: rgba(7,8,11,.92) !important; }
+.vb i { display: none !important; }
+@media (max-width: 560px) { .vb, .vsc { font-size: 10px !important; padding: 3px 6px !important; border-radius: 4px !important; } }
+.vb.off { color: var(--off) !important; } .vb.on { color: var(--on) !important; }
+.vsc { position: absolute; bottom: 2.4%; z-index: 2; padding: .28em .62em; border-radius: 6px; background: rgba(7,8,11,.92); color: #fff; font-size: clamp(12px, 1.9vw, 22px); font-weight: 700; line-height: 1.2; pointer-events: none; white-space: nowrap; }
 .vb { top: auto; bottom: 2.4%; }
 .vb.off i { background: var(--off); } .vb.on i { background: var(--on); }
 .vs { color: var(--soft); font-variant-numeric: tabular-nums; }
@@ -302,8 +331,9 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
 <header class="bar" id="bar">
   <div class="wrap">
     <button class="lang" id="langBtn" type="button" aria-label="Switch language">한국어</button>
+    <a class="brand" href="https://coolab-inu.github.io/" aria-label="COOL Lab"><img src="cool_lab_dark.png" alt="COOL Lab, Control &amp; Observer Optimization Lab" width="325" height="120"></a>
     <nav aria-label="Sections">
-      <a href="#sim" data-ko="시뮬레이션">Simulation</a><a href="#replay" data-ko="3D 재현">3D replay</a><a href="#results" data-ko="결과">Results</a><a href="#hardware" data-ko="하드웨어">Hardware</a>
+      <a href="#hardware" data-ko="실험 영상">Hardware</a><a href="#sim" data-ko="시뮬레이션">Simulation</a><a href="#replay" data-ko="3D 모델">3D model</a><a href="#results" data-ko="결과">Results</a>
     </nav>
   </div>
 </header>
@@ -322,15 +352,91 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   <div class="scrollcue" aria-hidden="true">SCROLL ↓</div>
 </div>
 
+<section id="hardware">
+  <div class="wrap">
+    <div class="sh rv"><div>
+      <h2 data-ko="실험 영상">Hardware</h2>
+      <p data-ko="DOB를 끈 경우와 켠 경우(L = 50)에 손가락으로 한 번씩 쳤다. 흰 점선은 정지 상태의 큐브 축과 기준 평면이고, 색 선은 지금의 큐브 축과 IMU 보드 평면이다. 선은 기울기를 10배 키워 그렸고, 숫자는 실제 기울기이다.">One finger tap each, DOB off and on (L = 50). Dashed white is the cube axis and the reference plane at rest; the colored lines are the current cube axis and the IMU board plane, drawn at 10× tilt. The number is the actual tilt.</p>
+    </div></div>
+    <figure class="hud run tap rv"><i class="c1"></i><i class="c2"></i><div class="tapwrap"><video id="tapVid" src="hw_tap_pair_nm.mp4" poster="hw_tap_pair_nm_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Finger tap, observer off (left) and on (right)"></video><svg class="axov" viewBox="0 0 1452 720" preserveAspectRatio="none" aria-hidden="true">
+  <g class="ax off" data-bx="377" data-by="609" data-a0="-0.5"><line class="ref"/><path class="arc"/><line class="live"/><line class="pref"/><line class="plive"/><circle class="piv" r="7"/><text class="ang"></text></g>
+  <g class="ax on" data-bx="1098" data-by="619" data-a0="0"><line class="ref"/><path class="arc"/><line class="live"/><line class="pref"/><line class="plive"/><circle class="piv" r="7"/><text class="ang"></text></g>
+</svg><span class="vb off" style="left:1.2%"><i></i><span data-ko="DOB 끔">DOB off</span></span><span class="vb on" style="left:51.6%"><i></i><span data-ko="DOB 켬">DOB on</span></span><span class="vsc" style="right:51.6%" data-ko="각도 스케일 10배">Angle scale ×10</span><span class="vsc" style="right:1.2%" data-ko="각도 스케일 10배">Angle scale ×10</span></div>
+      <figcaption class="pair ro2"><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT0">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW0">0 rad/s</b></span><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT1">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW1">0 rad/s</b></span></figcaption></figure>
+    <div class="deck rv">
+      <div class="ctrl">
+        <button class="btn" id="tPlay" type="button" aria-pressed="true">PAUSE</button>
+        <span class="seg" role="group" aria-label="Playback speed">
+          <button class="btn tspd" type="button" data-s="1" aria-pressed="true">1×</button>
+          <button class="btn tspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+          <button class="btn tspd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
+        </span>
+      </div>
+    </div>
+    <div class="plot rv" style="margin:14px 0 30px">
+      <div class="hd"><h3 data-ko="기울기 <span>· deg</span>">Tilt <span>· deg</span></h3>
+        <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span><span><i style="background:var(--pulse)"></i>tap</span></span></div>
+      <svg id="pTap" role="img" aria-label="Tilt after the finger tap, observer off and on, synced to the videos"></svg>
+    </div>
+    <div class="plot rv" style="margin:0 0 30px">
+      <div class="hd"><h3 data-ko="휠 속도 <span>· rad/s</span>">Wheel speed <span>· rad/s</span></h3>
+        <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span></span></div>
+      <svg id="pTapW" role="img" aria-label="Peak wheel speed after the finger tap, observer off and on"></svg>
+    </div>
+
+    <div class="sh rv" style="margin-top:70px"><div>
+      <h3 class="subh" data-ko="펄스 외란">Pulse disturbance</h3>
+      <p data-ko="이번에는 손으로 치지 않고 펌웨어에서 0.078 N·m 외란을 0.1 s 동안 넣었다. 6 s 간격으로 세 번 넣었고 L은 21.6이다. DOB를 켜면 최대 기울기가 1.00°에서 0.59°로, 휠 속도가 22 rad/s에서 14 rad/s로 줄었다.">This time the firmware applies the pulse instead of a finger: 0.078 N·m for 0.1 s, three times, 6 s apart, L = 21.6. With the DOB, the peak tilt drops from 1.00° to 0.59° and the wheel speed from 22 to 14 rad/s.</p>
+    </div></div>
+    <div class="rv">
+      <figure class="hud run cmp" style="margin:0"><i class="c1"></i><i class="c2"></i>
+        <video id="cmpVid" src="hw_dob_compare.mp4" poster="hw_dob_compare_poster.jpg" style="aspect-ratio:1452/1508;background:var(--bg)" muted loop playsinline autoplay preload="auto" aria-label="Software disturbance pulse, DOB off (left) and on (right), with tilt and wheel speed graphs"></video><span class="vb off" style="left:1.24%;bottom:47.5%"><i></i><span data-ko="DOB 끔">DOB off</span></span><span class="vb on" style="left:51.65%;bottom:47.5%"><i></i><span data-ko="DOB 켬">DOB on</span></span><span class="vsc" style="right:51.55%;bottom:47.5%" data-ko="각도 스케일 10배">Angle scale ×10</span><span class="vsc" style="right:1.15%;bottom:47.5%" data-ko="각도 스케일 10배">Angle scale ×10</span>
+      </figure>
+      <div class="deck">
+        <div class="ctrl">
+          <button class="btn" id="cmpPlay" type="button" aria-pressed="true">PAUSE</button>
+          <span class="seg" role="group" aria-label="Playback speed">
+            <button class="btn cmpspd" type="button" data-s="1" aria-pressed="true">1×</button>
+            <button class="btn cmpspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+            <button class="btn cmpspd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
+          </span>
+        </div>
+      </div>
+    </div>
+    <script>
+    (function () {
+      var v = document.getElementById('cmpVid'), b = document.getElementById('cmpPlay');
+      if (!v || !b) return;
+      var playing = true;
+      function sync() { b.textContent = playing ? 'PAUSE' : 'PLAY'; b.setAttribute('aria-pressed', playing); }
+      b.addEventListener('click', function () {
+        playing = !playing;
+        if (playing) { var p = v.play(); if (p && p.catch) p.catch(function () {}); } else v.pause();
+        sync();
+      });
+      var sp = document.querySelectorAll('.cmpspd');
+      sp.forEach(function (x) {
+        x.addEventListener('click', function () {
+          v.playbackRate = +x.dataset.s;
+          sp.forEach(function (y) { y.setAttribute('aria-pressed', y === x); });
+        });
+      });
+      sync();
+    })();
+    </script>
+
+  </div>
+</section>
+
 <section id="sim">
   <div class="wrap">
     <div class="sh rv"><div>
       <h2 data-ko="시뮬레이션">Simulation</h2>
-      <p data-ko="제어기는 쿼터니언 PD와 피드백 선형화이고, DOB의 L은 50이다. 실측 파라미터로 t = 3 s에 y축으로 0.2 N·m 외란을 가했다. 왼쪽은 DOB를 끈 경우, 오른쪽은 켠 경우이며 Simulink 애니메이션을 0.5배속으로 재생한다.">Quaternion PD + feedback linearization, DOB L = 50. Measured parameters, 0.2 N·m pulse about y at t = 3 s. Left without the observer, right with it. Simulink animation at half speed.</p>
+      <p data-ko="제어기는 쿼터니언 PD와 피드백 선형화이고, DOB의 L은 50이다. 실측 파라미터로 t = 3 s에 y축으로 0.2 N·m 외란을 가했다. 왼쪽은 DOB를 끈 경우, 오른쪽은 켠 경우이다.">Quaternion PD + feedback linearization, DOB L = 50. Measured parameters, 0.2 N·m pulse about y at t = 3 s. Left without the observer, right with it.</p>
     </div></div>
 
     <div class="rv">
-      <figure class="hud simvid"><i class="c1"></i><i class="c2"></i>
+      <figure class="hud simvid"><i class="c1"></i><i class="c2"></i><span class="vs swvs sb" id="simVs">0.5×</span>
         <video id="simVid" src="sim_crop.mp4" poster="sim_crop_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Simulink animation, DOB off and on side by side"></video>
       </figure>
       <div class="deck">
@@ -350,19 +456,20 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
         <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span><span><i style="background:var(--pulse)"></i>pulse</span></span></div>
       <svg id="pTilt" role="img" aria-label="Tilt over time, DOB off and on"></svg>
     </div>
+
   </div>
 </section>
 
 <section id="replay">
   <div class="wrap">
     <div class="sh rv"><div>
-      <h2 data-ko="3D 재현">3D replay</h2>
-      <p data-ko="최신 하드웨어 로그(50 Hz, DOB 켬, L = 25.6)로 큐브를 움직인다. 균형점에서 2.4° 벗어난 상태로 손을 놓는 순간부터 시작하며, 드래그하면 회전할 수 있다.">Latest hardware log, 50 Hz, DOB on (L = 25.6). Starts at the release, 2.4° off the pose. Drag to rotate.</p>
+      <h2 data-ko="3D 모델">3D model</h2>
+      <p data-ko="최신 하드웨어 로그(50 Hz, DOB 켬, L = 25.6)로 큐브를 움직인다. 균형점에서 2.4° 벗어난 상태로 손을 놓는 순간부터 시작한다.">Latest hardware log, 50 Hz, DOB on (L = 25.6). Starts at the release, 2.4° off the pose.</p>
     </div></div>
 
     <div class="replay rv">
       <div class="hud stage" id="stage"><i class="c1"></i><i class="c2"></i>
-        <div class="wl" id="wl1" style="color:var(--w1)"><i style="background:var(--w1)"></i><b id="lw1">0</b></div><div class="wl" id="wl2" style="color:var(--w2)"><i style="background:var(--w2)"></i><b id="lw2">0</b></div><div class="wl" id="wl3" style="color:var(--w3)"><i style="background:var(--w3)"></i><b id="lw3">0</b></div><div class="loading" id="loading">LOADING MODEL…</div>
+        <div class="wl" id="wl1" style="color:var(--w1)"><i style="background:var(--w1)"></i><b id="lw1">0</b><small>rad/s</small></div><div class="wl" id="wl2" style="color:var(--w2)"><i style="background:var(--w2)"></i><b id="lw2">0</b><small>rad/s</small></div><div class="wl" id="wl3" style="color:var(--w3)"><i style="background:var(--w3)"></i><b id="lw3">0</b><small>rad/s</small></div><span class="hint" data-ko="드래그해서 회전">Drag to rotate</span><div class="loading" id="loading">LOADING MODEL…</div>
       </div>
       <div class="side">
         <div class="readouts">
@@ -392,6 +499,31 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
         <span class="legend"><span><i style="background:var(--w1)"></i>wheel 1</span><span><i style="background:var(--w2)"></i>wheel 2</span><span><i style="background:var(--w3)"></i>wheel 3</span></span></div>
       <svg id="wplot" role="img" aria-label="Wheel speed over time from the hardware log, synced to the replay"></svg>
     </div>
+    <div class="sh rv" style="margin-top:70px"><div>
+      <h3 class="subh" data-ko="스윙업">Swing-up</h3>
+      <p data-ko="면에 누운 큐브가 휠을 급제동해 모서리를 거쳐 꼭짓점으로 일어선다. 모터의 제동력과 토크가 부족해 하드웨어로는 구현하지 못하고, 모의실험으로만 확인하였다.">Lying on a face, the cube brakes its wheels to jump onto an edge and then onto the corner. The motors lack the braking force and torque for this, so it could not be done on hardware and was checked in simulation only.</p>
+    </div></div>
+    <div class="rv">
+      <div class="hud stage swst" id="swStage"><i class="c1"></i><i class="c2"></i><span class="vs swvs sb" id="swVs">0.25×</span><span class="hint" data-ko="드래그해서 회전">Drag to rotate</span><span class="swph" id="swPh"><b data-k="1" data-ko="면">face</b><em>→</em><b data-k="2" data-ko="모서리">edge</b><em>→</em><b data-k="3" data-ko="꼭짓점">corner</b></span></div>
+      <div class="deck"><div class="ctrl">
+        <button class="btn" id="swPlay" type="button" aria-pressed="true">PAUSE</button>
+        <button class="btn" id="swRe" type="button">REPLAY</button>
+        <span class="seg" role="group" aria-label="Swing-up speed">
+          <button class="btn swspd" type="button" data-s="1" aria-pressed="false">1×</button>
+          <button class="btn swspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+          <button class="btn swspd" type="button" data-s="0.25" aria-pressed="true">0.25×</button>
+        </span>
+      </div></div>
+    </div>
+    <div class="plot rv" style="margin-top:14px">
+      <div class="hd"><h3 data-ko="기울기 <span>· deg</span>">Tilt <span>· deg</span></h3></div>
+      <svg id="swTilt" role="img" aria-label="Tilt during the swing-up"></svg>
+    </div>
+    <div class="plot rv" style="margin-top:14px">
+      <div class="hd"><h3 data-ko="휠 속도 <span>· rad/s</span>">Wheel speed <span>· rad/s</span></h3>
+        <span class="legend"><span><i style="background:var(--w1)"></i>wheel 1</span><span><i style="background:var(--w2)"></i>wheel 2</span><span><i style="background:var(--w3)"></i>wheel 3</span></span></div>
+      <svg id="swW" role="img" aria-label="Wheel speed during the swing-up"></svg>
+    </div>
   </div>
 </section>
 
@@ -399,58 +531,18 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   <div class="wrap">
     <div class="sh rv"><div>
       <h2 data-ko="결과">Results</h2>
-      <p data-ko="기울기에서 요는 제외했다. 하드웨어는 L = 50이다.">Tilt excludes yaw. Hardware runs use L = 50.</p>
+      <p data-ko="기울기에서 요는 제외했다. 손가락 탭은 L = 50, 펄스 외란은 L = 21.6이다.">Tilt excludes yaw. L = 50 for the finger tap, L = 21.6 for the pulse disturbance.</p>
     </div></div>
     <div class="tablebox rv">
       <table>
         <tbody id="mtable"></tbody>
       </table>
     </div>
-    <p class="concl rv" data-ko="DOB를 켜면 시뮬레이션에서 덜 기운다. 하드웨어에서는 탭 뒤 반동이 41%, 휠 최고 속도가 33% 줄어든다.">With the DOB, the cube tilts less in simulation. On hardware, a finger tap shows 41% less rebound and 33% lower peak wheel speed.</p>
+    <p class="concl rv" data-ko="DOB를 켜면 시뮬레이션에서 덜 기운다. 하드웨어에서는 탭 뒤 반동이 41%, 휠 최고 속도가 33% 줄어든다. 펄스 외란에서는 최대 기울기가 41%, 휠 최고 속도가 37% 줄어든다.">With the DOB, the cube tilts less in simulation. On hardware, a finger tap shows 41% less rebound and 33% lower peak wheel speed. Under the pulse disturbance, the peak tilt drops 41% and the peak wheel speed 37%.</p>
   </div>
 </section>
 
-<section id="hardware">
-  <div class="wrap">
-    <div class="sh rv"><div>
-      <h2 data-ko="하드웨어">Hardware</h2>
-      <p data-ko="DOB를 끈 경우와 켠 경우(L = 50)에 손가락으로 한 번씩 쳤다. 손으로 쳐서 최대 기울기는 비슷하지만, 반동과 휠 속도는 차이가 난다. 흰 점선은 정지 상태의 큐브 축이고, 색 선은 로그의 기울기를 10배 키워 그린 것이다.">One finger tap each, DOB off and on (L = 50). The peak is about the same since it is a hand tap; the rebound and wheel spin-up are not. Dashed white is the cube axis at rest; the colored line is the logged tilt, drawn 10× larger.</p>
-    </div></div>
-    <figure class="hud run tap rv"><i class="c1"></i><i class="c2"></i><div class="tapwrap"><video id="tapVid" src="hw_tap_pair_nm.mp4" poster="hw_tap_pair_nm_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Finger tap, observer off (left) and on (right)"></video><svg class="axov" viewBox="0 0 1452 720" preserveAspectRatio="none" aria-hidden="true">
-  <g class="ax off" data-bx="380" data-by="605" data-a0="-5.9"><line class="ref"/><path class="arc"/><line class="live"/><circle class="piv" r="7"/></g>
-  <g class="ax on" data-bx="1097" data-by="619" data-a0="-3.3"><line class="ref"/><path class="arc"/><line class="live"/><circle class="piv" r="7"/></g>
-  <text class="mag" x="718" y="704" text-anchor="end">tilt ×10</text><text class="mag" x="1440" y="704" text-anchor="end">tilt ×10</text>
-</svg><span class="vb off" style="left:1.2%"><i></i><span data-ko="DOB 끔">DOB off</span></span><span class="vb on" style="left:51.6%"><i></i><span data-ko="DOB 켬">DOB on</span></span><span class="vs" style="right:51.6%">1× real time</span><span class="vs" style="right:1.2%">1× real time</span></div>
-      <figcaption class="pair ro2"><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT0">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW0">0 rad/s</b></span><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT1">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW1">0 rad/s</b></span></figcaption></figure>
-    <div class="deck rv">
-      <div class="ctrl">
-        <button class="btn" id="tPlay" type="button" aria-pressed="true">PAUSE</button>
-        <span class="seg" role="group" aria-label="Playback speed">
-          <button class="btn tspd" type="button" data-s="1" aria-pressed="true">1×</button>
-          <button class="btn tspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
-          <button class="btn tspd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
-        </span>
-      </div>
-    </div>
-    <div class="plot rv" style="margin:14px 0 30px">
-      <div class="hd"><h3 data-ko="기울기 <span>· deg</span>">Tilt <span>· deg</span></h3>
-        <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span><span><i style="background:var(--pulse)"></i>tap</span></span></div>
-      <svg id="pTap" role="img" aria-label="Tilt after the finger tap, observer off and on, synced to the videos"></svg>
-    </div>
-    <div class="rig rv">
-      <div>
-        <h3 data-ko="구성">Build</h3>
-        <dl class="spec">
-          <div><dt data-ko="제어보드">Controller</dt><dd>ESP32, 5 ms loop</dd></div>
-          <div><dt>IMU</dt><dd>MPU-6050</dd></div>
-          <div><dt data-ko="모터">Motors</dt><dd>Nidec 24H × 3</dd></div>
-          <div><dt data-ko="배터리">Battery</dt><dd>3S 11.1 V, 450 mAh</dd></div>
-          <div><dt data-ko="총 질량">Total mass</dt><dd>1019.9 g</dd></div>
-        </dl>
-      </div>
-    </div>
-  </div>
-</section>
+
 </main>
 
 <footer>
@@ -485,10 +577,11 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   });
 
   // results table
-  const KO = { 'Simulation · 0.2 N·m, 0.1 s pulse': '시뮬레이션 · 0.2 N·m, 0.1 s 외란', 'Max tilt': '최대 기울기', 'Final tilt': '최종 기울기', 'Max torque': '최대 토크', 'Max wheel speed': '최대 휠 속도', 'Hardware · finger tap': '하드웨어 · 손가락 탭', 'Peak tilt': '최대 기울기', 'Rebound': '반동', 'Wheel peak': '휠 최고 속도' };
+  const KO = { 'Simulation · 0.2 N·m, 0.1 s pulse': '시뮬레이션 · 0.2 N·m, 0.1 s 외란', 'Max tilt': '최대 기울기', 'Final tilt': '최종 기울기', 'Max torque': '최대 토크', 'Max wheel speed': '최대 휠 속도', 'Hardware · finger tap': '하드웨어 · 손가락 탭', 'Peak tilt': '최대 기울기', 'Rebound': '반동', 'Wheel peak': '휠 최고 속도', 'Hardware · pulse disturbance': '하드웨어 · 펄스 외란' };
   let LANG = 'en';
   const ROWS = [['Simulation · 0.2 N·m, 0.1 s pulse'], ['Max tilt', 1.82, 0.82, '°', 2], ['Final tilt', 0.12, 0.08, '°', 2, 't = 6 s'], ['Max torque', 0.242, 0.250, '', 3, 'N·m'], ['Max wheel speed', 115.9, 98.4, '', 1, 'rad/s'],
-    ['Hardware · finger tap'], ['Peak tilt', 1.43, 1.42, '°', 2], ['Rebound', 0.99, 0.58, '°', 2], ['Wheel peak', 86, 58, '', 0, 'rad/s']];
+    ['Hardware · finger tap'], ['Peak tilt', 1.43, 1.42, '°', 2], ['Rebound', 0.99, 0.58, '°', 2], ['Wheel peak', 86, 58, '', 0, 'rad/s'],
+    ['Hardware · pulse disturbance'], ['Peak tilt', 1.00, 0.59, '°', 2], ['Wheel peak', 21.7, 13.7, '', 1, 'rad/s']];
   function drawRows() {
     const tb = document.getElementById('mtable'); tb.innerHTML = '';
     const L = n => LANG === 'ko' ? (KO[n] || n) : n;
@@ -511,6 +604,7 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   }
   langBtn.addEventListener('click', () => setLang(LANG === 'ko' ? 'en' : 'ko'));
   try { localStorage.removeItem('cubli-lang'); } catch (e) {}
+  setLang('ko');
 
 
   // ---------- progressive plots ----------
@@ -570,7 +664,7 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   if (reduce) vid.removeAttribute('autoplay');
   playBtn.addEventListener('click', () => { sPlaying = !sPlaying; applyPlay(); sSync(); }); sSync();
   document.querySelectorAll('.spd').forEach(b => b.addEventListener('click', () => {
-    vid.playbackRate = +b.dataset.s; document.querySelectorAll('.spd').forEach(x => x.setAttribute('aria-pressed', x === b));
+    vid.playbackRate = +b.dataset.s; document.getElementById('simVs').textContent = (0.5 * b.dataset.s) + '×'; document.querySelectorAll('.spd').forEach(x => x.setAttribute('aria-pressed', x === b));
   }));
   // the Simulink clip runs t = 2.80 s ... at half speed: sim t = 2.80 + 0.5 * video time
   let sp = null, ST = null;
@@ -591,10 +685,10 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   }
   // ---------- 04 hardware tap: two clips + one synced plot ----------
   const vA = document.getElementById('tapVid'), vB = vA, tBtn = document.getElementById('tPlay');
-  let tPlaying = !reduce, tp = null, TT = null, GA = null, GW = null;
+  let tPlaying = !reduce, tp = null, tpw = null, TT = null, GA = null, GW = null;
   const RO = [0, 1].map(j => ({ t: document.getElementById('roT' + j), w: document.getElementById('roW' + j) }));
-  const AX = [...document.querySelectorAll('.axov .ax')].map(g => ({ bx: +g.dataset.bx, by: +g.dataset.by, a0: +g.dataset.a0, ref: g.querySelector('.ref'), live: g.querySelector('.live'), arc: g.querySelector('.arc'), piv: g.querySelector('.piv') }));
-  const AXL = 500, AXM = 10;
+  const AX = [...document.querySelectorAll('.axov .ax')].map(g => ({ bx: +g.dataset.bx, by: +g.dataset.by, a0: +g.dataset.a0, ref: g.querySelector('.ref'), live: g.querySelector('.live'), arc: g.querySelector('.arc'), piv: g.querySelector('.piv'), pref: g.querySelector('.pref'), plive: g.querySelector('.plive'), ang: g.querySelector('.ang'), cx: g.classList.contains('on') ? 732 : 0 }));
+  const AXL = 527, AXM = 10, IMUF = 0.56;
   function axDraw(g, tilt) {
     const r = d => d * Math.PI / 180, a0 = r(g.a0), a1 = r(g.a0 - tilt * AXM);
     const P = a => [g.bx + AXL * Math.sin(a), g.by - AXL * Math.cos(a)];
@@ -604,6 +698,12 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
     g.piv.setAttribute('cx', g.bx); g.piv.setAttribute('cy', g.by);
     const R = 150, A = a => [g.bx + R * Math.sin(a), g.by - R * Math.cos(a)], [ax0, ay0] = A(a0), [ax1, ay1] = A(a1);
     g.arc.setAttribute('d', `M${ax0.toFixed(1)} ${ay0.toFixed(1)} A${R} ${R} 0 0 0 ${ax1.toFixed(1)} ${ay1.toFixed(1)}`);
+    // IMU plane (perpendicular to the cube axis, at the board height) vs the reference plane
+    const H = AXL * IMUF, HL = 170;
+    const seg = (a, el) => { const cx = g.bx + H * Math.sin(a), cy = g.by - H * Math.cos(a), ux = Math.cos(a), uy = Math.sin(a);
+      el.setAttribute('x1', (cx - HL * ux).toFixed(1)); el.setAttribute('y1', (cy - HL * uy).toFixed(1)); el.setAttribute('x2', (cx + HL * ux).toFixed(1)); el.setAttribute('y2', (cy + HL * uy).toFixed(1)); return [cx, cy]; };
+    const [rx, ry] = seg(a0, g.pref); seg(a1, g.plive);
+    g.ang.setAttribute('x', g.cx + 30); g.ang.setAttribute('y', 78); g.ang.textContent = tilt.toFixed(2) + '°';
   }
   AX.forEach(g => axDraw(g, 0));
   if (reduce) [vA, vB].forEach(v => v.removeAttribute('autoplay'));
@@ -612,7 +712,6 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
   tBtn.addEventListener('click', () => { tPlaying = !tPlaying; tApply(); tSync(); }); tSync();
   document.querySelectorAll('.tspd').forEach(b => b.addEventListener('click', () => {
     [vA, vB].forEach(v => v.playbackRate = +b.dataset.s); document.querySelectorAll('.tspd').forEach(x => x.setAttribute('aria-pressed', x === b));
-    document.querySelectorAll('.vs').forEach(x => x.textContent = b.dataset.s + '× real time');
   }));
   fetch('hw_tap.json').then(r => r.json()).then(J => {
     TT = J.off.t;
@@ -622,6 +721,8 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
     GA = [J.off.tilt, onI];
     const onW = TT.map(t => { const a = J.on.t; let i = 0; while (i < a.length - 2 && a[i + 1] < t) i++; return J.on.w[i]; });
     GW = [J.off.w, onW];
+    tpw = makePlot(document.getElementById('pTapW'), { t: TT, y0: 0, y1: 100, yt: [0, 50, 100], xt: [0, 1, 2, 3, 4, 5, 6, 7], band: [3.24, 3.34], h: 180,
+      series: [{ y: J.off.w, color: C.off }, { y: onW, color: C.on }] });
     let was = false;
     dragSeek(document.getElementById('pTap'), x => { const t = tp.tAt(x); vA.currentTime = t; vB.currentTime = t; },
       () => { was = tPlaying; tPlaying = false; tApply(); tSync(); }, () => { tPlaying = was; tApply(); tSync(); });
@@ -643,7 +744,7 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
     const t = vA.currentTime || 0;
     if (!vB.seeking && Math.abs(vB.currentTime - t) > 0.08) vB.currentTime = t;
     let lo = 0, hi = TT.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (TT[md] <= t) lo = md; else hi = md; }
-    tp.draw(lo);
+    tp.draw(lo); if (tpw) tpw.draw(lo);
     if (GA) RO.forEach((r, j) => { r.t.textContent = GA[j][lo].toFixed(2) + '°'; r.w.textContent = Math.round(GW[j][lo]) + ' rad/s'; axDraw(AX[j], GA[j][lo]); });
   }
 
@@ -830,20 +931,76 @@ footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-siz
     dragSeek(document.getElementById('wplot'), x => { rTime = wp.tAt(x); }, () => { was = rPlaying; rPlaying = false; rSync(); }, () => { rPlaying = was; rSync(); });
   }).catch(() => { const l = document.getElementById('loading'); if (l) l.textContent = 'LOG UNAVAILABLE'; });
 
+  // ---------- swing-up (Python rerun of the Simulink model) ----------
+  const SW = {}; let sw = null, swN = 0, swT = 0, swSpeed = 0.25, swPlaying = !reduce, swHold = 0, swP1 = null, swP2 = null;
+  const swStage = document.getElementById('swStage'), swPh = [...document.querySelectorAll('#swPh b')], swBtn = document.getElementById('swPlay');
+  function initSwing(G) {
+    if (!swStage) return;
+    const r = makeRenderer(swStage); r.shadowMap.enabled = true;
+    const sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(18, 16 / 9, 0.1, 100);
+    const key = lights(sc, false); key.intensity = 0.7; key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+    Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(4, 64), new THREE.ShadowMaterial({ opacity: 0.45 }));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; sc.add(floor);
+    const grid = new THREE.GridHelper(8, 32, 0x2b303b, 0x1a1d24); grid.material.transparent = true; grid.material.opacity = 0.6; sc.add(grid);
+    const c = buildCube(G, true); sc.add(c.pivot);
+    const mRep = new THREE.MeshStandardMaterial({ color: 0x80858e, roughness: 0.85, metalness: 0.0 });
+    c.pivot.traverse(o => { if (o.isMesh) o.material = mRep; });
+    sc.children.forEach(o => { if (o.isHemisphereLight) o.intensity = 0.4; if (o.isDirectionalLight && o !== key) o.intensity *= 0.7; });
+    const tgt = new THREE.Vector3(0.55, 0.8, 0.55);
+    cam.position.set(9.5, 4.2, 9.0).add(tgt);
+    const ctl = new THREE.OrbitControls(cam, r.domElement); ctl.target.copy(tgt); ctl.enableDamping = true; ctl.enablePan = false; ctl.minDistance = 6; ctl.maxDistance = 22;
+    sw = { r, sc, cam, ctl, pivot: c.pivot, wheels: c.wheels }; fit(r, cam, swStage);
+    addEventListener('resize', () => fit(r, cam, swStage));
+  }
+  const swQ = new THREE.Quaternion();
+  function swIdx(t) { let lo = 0, hi = swN - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (SW.t[m] <= t) lo = m; else hi = m; } return lo; }
+  function swTick(dt) {
+    if (!swN || !sw) return;
+    if (swPlaying) { if (swHold > 0) { swHold -= dt; if (swHold <= 0) swT = 0; } else { swT += dt * swSpeed; if (swT >= SW.t[swN - 1]) { swT = SW.t[swN - 1]; swHold = 1.2; } } }
+    const k = swIdx(swT);
+    sw.pivot.quaternion.copy(toThree(SW.q[k], swQ));
+    if (swPlaying && swHold <= 0) for (let i = 0; i < 3; i++) sw.wheels[i].rotation.z += SW.w[k][i] * dt * swSpeed * 0.25;
+    const m = SW.mode[k], ph = m <= 2 ? 1 : m <= 5 ? 2 : 3;
+    swPh.forEach(b => b.classList.toggle('on', +b.dataset.k === ph));
+    if (swP1) swP1.draw(k); if (swP2) swP2.draw(k);
+    sw.ctl.update(); sw.r.render(sw.sc, sw.cam);
+  }
+  if (swBtn) {
+    const sync = () => { swBtn.textContent = swPlaying ? 'PAUSE' : 'PLAY'; swBtn.setAttribute('aria-pressed', swPlaying); };
+    swBtn.addEventListener('click', () => { swPlaying = !swPlaying; sync(); }); sync();
+    document.getElementById('swRe').addEventListener('click', () => { swT = 0; swHold = 0; swPlaying = true; sync(); });
+    document.querySelectorAll('.swspd').forEach(b => b.addEventListener('click', () => { swSpeed = +b.dataset.s; document.getElementById('swVs').textContent = b.dataset.s + '×'; document.querySelectorAll('.swspd').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  }
+  fetch('swing.json').then(r => r.json()).then(J => {
+    Object.assign(SW, J); swN = SW.t.length;
+    const xt = [0, 0.5, 1, 1.5, 2, 2.5, 3];
+    swP1 = makePlot(document.getElementById('swTilt'), { t: SW.t, y0: 0, y1: 60, yt: [0, 20, 40, 60], xt, h: 170, series: [{ y: SW.tilt, color: C.on }] });
+    swP2 = makePlot(document.getElementById('swW'), { t: SW.t, y0: -600, y1: 600, yt: [-600, -300, 0, 300, 600], xt, h: 200, series: [0, 1, 2].map(i => ({ y: SW.w.map(r => r[i]), color: C.w[i] })) });
+    [['swTilt', swP1], ['swW', swP2]].forEach(([id, pl]) => dragSeek(document.getElementById(id), x => { swT = pl.tAt(x); swHold = 0; }, () => { swPlaying = false; }, () => { swPlaying = true; }));
+  }).catch(() => {});
+
   // ---------- load model, run ----------
   fetch('models.json').then(r => r.json()).then(MJ => {
     const G = { side: geo(decode(MJ.side)), rw: geo(decode(MJ.rwside)), wheel: geo(decode(MJ.wheel)), mh: geo(decode(MJ.motorholder)) };
-    initHero(G); initReplay(G);
+    initHero(G); initReplay(G); initSwing(G);
   }).catch(() => {
     ['loading'].forEach(id => { const l = document.getElementById(id); if (l) l.textContent = 'MODEL UNAVAILABLE'; });
   });
   let last = performance.now();
   (function loop(now) {
     const dt = Math.min(0.05, (now - last) / 1000); last = now;
-    heroTick(dt); simTick(dt); repTick(dt);
+    heroTick(dt); simTick(dt); repTick(dt); swTick(dt);
     requestAnimationFrame(loop);
   })(performance.now());
 })();
 </script>
 
+<script>
+(function(){ const links=[...document.querySelectorAll('.bar nav a')], secs=links.map(a=>document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  function spy(){ const y=innerHeight*0.35; let cur=-1; secs.forEach((s,i)=>{ if(s.getBoundingClientRect().top<=y) cur=i; });
+    if(innerHeight+scrollY>=document.documentElement.scrollHeight-4) cur=secs.length-1;
+    links.forEach((a,i)=>a.classList.toggle('on',i===cur)); }
+  addEventListener('scroll',spy,{passive:true}); addEventListener('resize',spy); spy(); })();
+</script>
 </body></html>
