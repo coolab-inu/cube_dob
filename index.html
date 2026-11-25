@@ -1,0 +1,849 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Self-Balancing Cube with a DOB</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Instrument-panel dark. Cyan = DOB on, pink = DOB off. */
+:root {
+  --bg: #07080b;
+  --panel: #0e1016;
+  --panel2: #12151c;
+  --line: #20242d;
+  --line2: #2b303b;
+  --fg: #eef0f4;
+  --soft: #c3c8d1;
+  --muted: #858b96;
+  --on: #00fff7;
+  --off: #ff1e9d;
+  --pulse: #8a8f99;
+  --w1: #ff1e9d; --w2: #00fff7; --w3: #e9ebef;
+  --font-head: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); }
+body::after { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image: linear-gradient(rgba(255,255,255,.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.022) 1px, transparent 1px);
+  background-size: 48px 48px; }
+main, header, footer { position: relative; z-index: 1; }
+a { color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.on { color: var(--on); } .off { color: var(--off); }
+
+/* bar */
+.bar { position: fixed; top: env(safe-area-inset-top, 0px); left: 0; right: 0; z-index: 10; transition: background .3s, border-color .3s; border-bottom: 1px solid transparent; }
+.bar.solid { background: color-mix(in srgb, var(--bg) 86%, transparent); backdrop-filter: blur(10px); border-color: var(--line); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; padding-block: 14px; flex-wrap: wrap; }
+.brand { font-family: var(--font-mono); font-weight: 500; letter-spacing: .18em; font-size: 12.5px; display: flex; align-items: center; gap: 10px; }
+.brand .led { width: 7px; height: 7px; border-radius: 50%; background: var(--on); box-shadow: 0 0 10px var(--on); animation: blink 2.4s infinite; }
+@keyframes blink { 50% { opacity: .35; } }
+.bar nav { display: flex; gap: 4px 22px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.bar nav a { text-decoration: none; color: var(--muted); }
+.lang { order: 3; font: 500 10px var(--font-body); letter-spacing: .04em; color: var(--muted); background: transparent; border: 1px solid var(--line2); border-radius: 3px; padding: 3px 7px; cursor: pointer; }
+@media (min-width: 561px) { .bar .lang { position: absolute; right: 24px; top: 50%; transform: translateY(-50%); } .bar nav { margin-right: max(0px, calc(88px - max(16px, (100vw - 1180px) / 2 + 16px))); } }
+.lang:hover, .lang:focus-visible { color: var(--fg); border-color: var(--soft); }
+.brand { order: 1; } .bar nav { order: 2; margin-left: auto; }
+html[lang="ko"] body { word-break: keep-all; }
+.h1sub { color: var(--soft); }
+.concl { margin: 22px 0 0; max-width: 680px; color: var(--fg); font-size: 16px; }
+.bar nav a:hover, .bar nav a:focus-visible { color: var(--fg); }
+
+/* hero */
+.hero { position: relative; min-height: min(88vh, 820px); display: flex; align-items: center; overflow: hidden; }
+.hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(42% 55% at 76% 46%, rgba(0,255,247,.13), transparent 70%),
+              radial-gradient(30% 40% at 86% 70%, rgba(255,30,157,.08), transparent 70%),
+              linear-gradient(180deg, transparent 75%, var(--bg) 100%); }
+.hero-grid { position: static; }
+.hero-grid > div:first-child { position: relative; z-index: 2; }
+.herocube { position: absolute; z-index: 1; right: -17%; top: 50%; transform: translateY(-50%); width: min(76vw, 980px); aspect-ratio: 1 / 1; opacity: .4; pointer-events: none;
+  -webkit-mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); mask-image: radial-gradient(closest-side, #000 55%, transparent 100%); }
+.herocube canvas { display: block; width: 100% !important; height: 100% !important; }
+.hero .wrap { position: relative; z-index: 2; width: 100%; padding-block: 96px 64px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--fg); display: inline-flex; gap: 10px; align-items: center; }
+.eyebrow::before { content: ""; width: 26px; height: 1px; flex: none; background: var(--fg); }
+h1 { text-shadow: 0 2px 30px rgba(7,8,11,.6); font-family: var(--font-head); font-size: clamp(30px, 4.4vw, 62px); line-height: 1.04; letter-spacing: -.03em; font-weight: 700; margin: 16px 0 0; }
+.hero .lede { text-shadow: 0 1px 14px rgba(7,8,11,.9); max-width: 52ch !important; margin: 22px 0 0; color: var(--soft); font-size: 17px; max-width: 58ch; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 40px; border-top: 1px solid var(--line2); max-width: 640px; }
+.stat { padding: 16px 20px 0 0; }
+.stat + .stat { padding-left: 20px; border-left: 1px solid var(--line2); }
+.stat { text-shadow: 0 1px 12px rgba(7,8,11,.95), 0 0 2px rgba(7,8,11,.9); }
+.stat .big { font-family: var(--font-head); font-size: clamp(28px, 3.2vw, 42px); font-weight: 700; line-height: 1; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stat .lbl { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 10px; }
+.stat .sub { font-family: var(--font-mono); font-size: 12.5px; color: var(--soft); margin-top: 2px; }
+.scrollcue { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: 56px; z-index: 2; font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; color: var(--muted); writing-mode: vertical-rl; }
+
+/* sections */
+section { padding-block: 96px 0; }
+.sh { margin-bottom: 28px; }
+.sh .idx { font-family: var(--font-mono); font-size: 12px; color: var(--muted); padding-top: 10px; letter-spacing: .16em; }
+.sh .idx b { color: var(--fg); font-weight: 500; }
+h2 { font-family: var(--font-head); font-size: clamp(28px, 3.6vw, 44px); line-height: 1.05; letter-spacing: -.02em; margin: 0; font-weight: 700; text-wrap: balance; }
+.sh p { color: var(--soft); max-width: 66ch; margin: 14px 0 0; }
+
+/* HUD frame */
+.hud { position: relative; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); }
+.hud::before, .hud::after, .hud > .c1, .hud > .c2 { content: ""; position: absolute; width: 14px; height: 14px; border-color: var(--soft); border-style: solid; pointer-events: none; z-index: 3; }
+.hud::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.hud::after { top: -1px; right: -1px; border-width: 1px 1px 0 0; }
+.hud > .c1 { bottom: -1px; left: -1px; border-width: 0 0 1px 1px; }
+.hud > .c2 { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
+.tag { position: absolute; top: 12px; left: 14px; z-index: 3; font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+
+/* controller chain */
+.chain { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-bottom: 14px; font-family: var(--font-mono); font-size: 12.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--soft); }
+.chain span { border: 1px solid var(--line2); border-radius: 3px; padding: 6px 10px; background: var(--panel); }
+.chain i { font-style: normal; color: var(--muted); }
+.chain .dobtag { color: var(--on); border-color: color-mix(in srgb, var(--on) 40%, var(--line)); margin-left: auto; }
+@media (max-width: 700px) { .chain .dobtag { margin-left: 0; } }
+/* controller flow */
+.flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.fb { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 12px 14px; min-width: 0; }
+.fb .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.fb b { display: block; font-family: var(--font-head); font-weight: 600; font-size: 16px; margin-top: 4px; }
+.fb p { margin: 4px 0 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.fb:not(.dob):not(:nth-child(4))::after { content: "→"; position: absolute; right: -9px; top: 50%; transform: translateY(-50%); font-family: var(--font-mono); color: var(--soft); background: var(--bg); line-height: 1; padding: 2px 0; z-index: 2; }
+.fb.dob { grid-column: 1 / -1; border-color: color-mix(in srgb, var(--on) 35%, var(--line)); }
+.sigs.sigs3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fb:nth-child(2)::after { display: none; } .sigs.sigs3 { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .flow { grid-template-columns: 1fr; } .fb::after { display: none; } }
+/* controller phases */
+.phases { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; }
+.phases span[data-a] { padding: 6px 10px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); transition: color .2s, border-color .2s, background .2s; }
+.phases span.act { color: var(--fg); border-color: #4a5260; background: #1b1f28; }
+.phases .clock { margin-left: auto; color: var(--muted); }
+.phases .clock b { color: var(--fg); font-weight: 500; }
+/* sim video */
+.simvid { margin: 0; overflow: hidden; }
+.simvid { position: relative; }
+.simvid video { display: block; width: 100%; height: auto; aspect-ratio: 1280 / 674; background: var(--bg); }
+/* sim stage */
+.simstage { aspect-ratio: 16 / 7.2; overflow: hidden; cursor: grab; }
+.simstage:active { cursor: grabbing; }
+.simstage canvas { display: block; width: 100% !important; height: 100% !important; }
+.simlab { position: absolute; bottom: 7%; z-index: 3; transform: translateX(-50%); text-align: center; font-family: var(--font-mono); pointer-events: none; }
+.simlab .n { font-size: 12px; letter-spacing: .16em; }
+.simlab .v { font-size: 20px; color: var(--fg); font-variant-numeric: tabular-nums; margin-top: 2px; }
+.simlab.off { left: 28%; color: var(--off); } .simlab.on { left: 72%; color: var(--on); }
+.sigs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.sub { font-family: var(--font-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
+.deck { margin-top: 12px; display: grid; gap: 10px; }
+.ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.btn { font: 500 12px var(--font-mono); letter-spacing: .06em; color: var(--fg); background: var(--panel); border: 1px solid var(--line); border-radius: 3px; padding: 7px 12px; cursor: pointer; }
+.btn:hover { border-color: var(--line2); }
+.btn:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.btn[aria-pressed="true"] { background: #1b1f28; border-color: #4a5260; }
+.seg { display: inline-flex; gap: 4px; }
+.clock { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); margin-left: auto; }
+.clock b { color: var(--fg); font-weight: 500; }
+.plot { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 14px 14px 6px; min-width: 0; }
+.plot .hd { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; }
+.plot h3 { margin: 0; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; color: var(--soft); }
+.plot h3 span { color: var(--muted); }
+.legend { display: inline-flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.plot svg { width: 100%; height: auto; display: block; margin-top: 6px; touch-action: none; cursor: ew-resize; }
+.axis text { fill: var(--muted); font: 10.5px var(--font-mono); }
+.grid line { stroke: var(--line); }
+.note { font-size: 12.5px; color: var(--muted); margin: 6px 2px 0; }
+
+/* replay */
+.replay { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 14px; }
+.stage { aspect-ratio: 4 / 3; overflow: hidden; }
+.stage canvas { display: block; width: 100% !important; height: 100% !important; }
+.stage .loading { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: .12em; }
+.side { display: grid; gap: 14px; align-content: start; min-width: 0; }
+.readouts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--panel); }
+.ro { padding: 12px 14px; }
+.ro:nth-child(2n) { border-left: 1px solid var(--line); }
+.ro:nth-child(n+3) { border-top: 1px solid var(--line); }
+.ro .k { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+.ro .k i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.ro .v { font-family: var(--font-head); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 2px; }
+.ro .v small { font-family: var(--font-mono); font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.ro .bar2 { height: 3px; background: #1a1d25; margin-top: 8px; position: relative; overflow: hidden; }
+.ro .bar2 span { position: absolute; top: 0; bottom: 0; left: 50%; }
+.scrub { width: 100%; accent-color: var(--soft); }
+.marks { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); margin-top: -4px; }
+
+/* numbers */
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th, td { padding: 11px 14px; text-align: right; font-variant-numeric: tabular-nums; }
+th:first-child, td:first-child { text-align: left; padding-left: 0; }
+th:last-child, td:last-child { padding-right: 0; }
+thead th { font-weight: 500; color: var(--soft); font-size: 14px; border-bottom: 1px solid var(--line); padding-block: 12px; }
+thead th.off { color: var(--off); } thead th.on { color: var(--on); }
+td { color: var(--fg); }
+td.mono { font-family: inherit; }
+td.chg { font-weight: 600; color: var(--fg); font-size: 1.08em; } td.chg.on { color: var(--on); }
+tbody tr:not(.grp) td { border-bottom: 1px solid var(--line); } tbody tr:last-child td, tbody tr:has(+ tr.grp) td { border-bottom: 0; }
+td.flat { color: var(--muted); font-weight: 400; }
+td small.unit { color: var(--muted); font-size: .85em; }
+tr.grp th { font-weight: 600; color: var(--fg); font-size: 14px; border-bottom: 1px solid var(--soft); padding-top: 30px; padding-bottom: 10px; }
+tr.grp th.off { color: var(--off); } tr.grp th.on { color: var(--on); } tr.grp th:last-child { color: var(--soft); }
+tbody tr.grp:first-child th { padding-top: 14px; }
+@media (max-width: 560px) { table { font-size: 13.5px; } th, td { padding: 10px 6px; } td small { display: block; } }
+
+/* rig */
+.runs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 30px; }
+.run { margin: 0; min-width: 0; overflow: hidden; }
+.run video { width: 100%; height: auto; aspect-ratio: 16 / 9; display: block; background: #000; }
+.tappair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.run.tap video { aspect-ratio: 1452 / 720; background: var(--bg); }
+.tapwrap { position: relative; }
+.axov { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.axov .ref { stroke: rgba(255,255,255,.85); stroke-width: 3; stroke-dasharray: 12 9; }
+.axov .live { stroke-width: 6; stroke-linecap: round; }
+.axov .arc { fill: none; stroke-width: 3; }
+.axov .off .live, .axov .off .arc { stroke: var(--off); } .axov .on .live, .axov .on .arc { stroke: var(--on); }
+.axov .piv { fill: #fff; }
+.axov .mag { font: 500 18px var(--font-body); fill: rgba(255,255,255,.55); }
+.vb, .vs { position: absolute; top: 2.4%; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 6px; background: rgba(7,8,11,.78); color: var(--fg); font-size: clamp(10px, 1.25vw, 14px); font-weight: 500; line-height: 1.2; pointer-events: none; }
+.vb i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.vb { top: auto; bottom: 2.4%; }
+.vb.off i { background: var(--off); } .vb.on i { background: var(--on); }
+.vs { color: var(--soft); font-variant-numeric: tabular-nums; }
+.run figcaption.pair.ro2 { grid-template-columns: repeat(4, minmax(0, 1fr)); font-family: var(--font-body); }
+.ro2 > span { display: block; }
+.ro2 .rk { display: block; font-size: 12px; color: var(--muted); }
+.ro2 b.rv2 { display: block; font-family: var(--font-head); font-weight: 600; font-size: clamp(15px, 1.8vw, 22px); color: var(--fg); font-variant-numeric: tabular-nums; margin-top: 2px; }
+@media (max-width: 560px) { .vs { display: none; } .ro2 .rk { font-size: 10.5px; } }
+.gauge { position: absolute; top: 4%; pointer-events: none; text-align: left; padding-left: 1.2%; }
+.gauge svg { display: block; width: 100%; height: auto; overflow: visible; }
+.gauge .trk, .gauge .fil { fill: none; stroke-width: 6; stroke-linecap: round; }
+.gauge .trk { stroke: rgba(255,255,255,.16); }
+.gauge .fil { stroke-dasharray: 0 100; }
+.gauge.off .fil, .gauge.off .ndl { stroke: var(--off); } .gauge.on .fil, .gauge.on .ndl { stroke: var(--on); }
+.gauge .ndl { stroke-width: 3; stroke-linecap: round; }
+.gauge circle { fill: var(--fg); }
+.gauge .gv { margin-top: 2px; line-height: 1.05; text-shadow: 0 1px 8px rgba(0,0,0,.8); }
+.gauge .gv b { display: block; font-family: var(--font-head); font-weight: 600; font-size: clamp(13px, 2.2vw, 28px); font-variant-numeric: tabular-nums; }
+.gauge.off .gv b { color: var(--off); } .gauge.on .gv b { color: var(--on); }
+.gauge .gv span { font-family: var(--font-mono); font-size: clamp(8px, 1vw, 11px); letter-spacing: .14em; text-transform: uppercase; color: var(--soft); }
+.run figcaption.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.run.tap figcaption { padding: 10px 12px 12px; font-size: 12px; }
+.run.tap figcaption b { font-size: 15px; }
+.run figcaption b.off { color: var(--off); } .run figcaption b.on { color: var(--on); }
+.run figcaption { padding: 12px 16px 14px; font-size: 13.5px; color: var(--muted); border-top: 1px solid var(--line); font-family: var(--font-mono); }
+.run figcaption b { display: block; color: var(--fg); font-family: var(--font-head); font-weight: 600; font-size: 17px; }
+.rig { display: grid; grid-template-columns: 1fr; gap: 32px; }
+@media (min-width: 760px) {
+  .rig .spec { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); }
+  .rig .spec div { flex-direction: column; justify-content: flex-start; gap: 6px; padding: 14px 16px 4px 0; border-bottom: 0; }
+  .rig .spec dd { text-align: left; }
+}
+.rig h3 { font-size: 12px; font-family: var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 500; margin: 0 0 4px; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.steps .t { font-family: var(--font-mono); color: var(--muted); font-size: 12.5px; padding-top: 2px; }
+.steps b { font-weight: 600; }
+.steps p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+.spec { margin: 0; }
+.spec div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.spec dt { color: var(--muted); } .spec dd { margin: 0; text-align: right; font-family: var(--font-mono); font-size: 13.5px; }
+
+footer { margin-top: 100px; border-top: 1px solid var(--line); }
+footer .wrap { padding-block: 22px 44px; font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .06em; color: var(--muted); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+
+/* reveal */
+.rv { opacity: 0; transform: translateY(18px); transition: opacity .7s ease, transform .7s ease; }
+.rv.in { opacity: 1; transform: none; }
+
+@media (max-width: 900px) {
+  .herocube { right: -35%; top: 34%; width: 130vw; opacity: .26; }
+  .replay, .rig, .runs { grid-template-columns: 1fr; }
+  .sh { grid-template-columns: 1fr; }
+  .sh .idx { padding: 0 0 6px; }
+  .clock { margin-left: 0; }
+  .scrollcue { display: none; }
+}
+@media (max-width: 700px) { .sigs { grid-template-columns: 1fr; } .simstage { aspect-ratio: 4 / 3; } .simlab .v { font-size: 16px; } }
+@media (max-width: 560px) {
+  .stats { margin-top: 28px; }
+  .stat { padding: 12px 8px 0 0; }
+  .stat + .stat { padding-left: 10px; }
+  .stat .big { font-size: 26px; }
+  .stat .lbl { font-size: 9.5px; letter-spacing: .06em; margin-top: 6px; }
+  .stat .sub { font-size: 10.5px; }
+  .hero { min-height: auto; }
+  .hero .wrap { padding-block: 104px 8px; }
+  .bar nav { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 14px; font-size: 10.5px; letter-spacing: .04em; scrollbar-width: none; max-width: 100%; }
+  .bar nav::-webkit-scrollbar { display: none; }
+  .bar .wrap { flex-wrap: nowrap; }
+  .bar nav { order: 1; width: auto; flex: 1 1 auto; min-width: 0; margin-left: 0; }
+  .lang { order: 2; margin-left: auto; flex: none; }
+  #sim { padding-top: 64px; }
+  .herocube { left: auto; right: -90vw; top: 60%; transform: translateY(-50%); width: 204vw; height: 204vw; opacity: .36; }
+  .hero { overflow: visible; overflow-x: clip; }
+  body { overflow-x: clip; }
+  .phases .clock { margin-left: 0; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rv { opacity: 1; transform: none; transition: none; }
+  .brand .led { animation: none; }
+}
+.replay{grid-template-columns:1fr!important}.side{display:flex!important;flex-wrap:wrap;align-items:center;gap:10px 18px}.side>div:last-child{flex:1 1 260px}.stage{aspect-ratio:16/8.4!important}@media(max-width:560px){.stage{aspect-ratio:4/3!important}}.readouts{display:none!important}
+.wl{position:absolute;z-index:4;pointer-events:none;display:flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums;white-space:nowrap;transform:translate(14px,-50%)}
+.wl i{width:7px;height:7px;border-radius:50%;display:inline-block}.wl b{color:var(--fg);font-size:15px;font-weight:600;min-width:28px;text-align:right}.wl small{color:var(--muted);font-size:11px}
+.wl{color:var(--soft);font-size:12px;background:rgba(7,8,11,.62);padding:3px 8px;border-radius:4px}
+.tl{position:absolute;left:14px;top:12px;z-index:4;font-variant-numeric:tabular-nums;color:var(--soft);font-size:13px;display:flex;gap:18px}.tl b{color:var(--fg);font-size:20px;font-weight:600;margin-left:6px}.tl small{color:var(--muted);margin-left:2px}
+@media(max-width:560px){.wl{gap:6px;padding:0;background:none;border:0}.wl b{font-size:17px;text-align:left;min-width:0;line-height:1.25}.wl small{font-size:10px}.tl b{font-size:16px}}
+</style>
+
+<header class="bar" id="bar">
+  <div class="wrap">
+    <button class="lang" id="langBtn" type="button" aria-label="Switch language">한국어</button>
+    <nav aria-label="Sections">
+      <a href="#sim" data-ko="시뮬레이션">Simulation</a><a href="#replay" data-ko="3D 재현">3D replay</a><a href="#results" data-ko="결과">Results</a><a href="#hardware" data-ko="하드웨어">Hardware</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="hero">
+  <div class="wrap"><div class="hero-grid"><div>
+    <h1 data-ko="외란 관측기를 적용한<br>반작용 휠 기반 셀프 밸런싱<br>큐브의 자세 제어">Attitude Control of a<br>Reaction Wheel-Based<br>Self-Balancing Cube<br><span class="h1sub">with a Disturbance Observer</span></h1>
+    <p class="lede" data-ko="세 개의 반작용 휠로 꼭짓점 하나에서 균형을 잡는 큐브이다. 0.2 N·m 외란을 0.1 s 동안 가한다. 제어기와 파라미터는 그대로 두고 외란 관측기(DOB)만 끄고 켠다.">The cube balances on one corner with three reaction wheels. A 0.2 N·m pulse hits it for 0.1 s. Same controller, same parameters; only the disturbance observer (DOB) changes.</p>
+    <div class="stats">
+      <div class="stat"><div class="big" data-count="-55" data-suffix="%">0%</div><div class="lbl" data-ko="최대 기울기<br>시뮬레이션">Max tilt<br>simulation</div><div class="sub"><span class="off">1.82°</span> → <span class="on">0.82°</span></div></div>
+      <div class="stat"><div class="big" data-count="-15" data-suffix="%">0%</div><div class="lbl" data-ko="휠 속도<br>시뮬레이션">Wheel speed<br>simulation</div><div class="sub"><span class="off">115.9</span> → <span class="on">98.4</span> rad/s</div></div>
+      <div class="stat"><div class="big" data-count="-41" data-suffix="%">0%</div><div class="lbl" data-ko="반동<br>하드웨어">Rebound<br>hardware</div><div class="sub"><span class="off">0.99°</span> → <span class="on">0.58°</span></div></div>
+    </div>
+  </div><div class="herocube" id="heroCube" aria-hidden="true"></div></div></div>
+  <div class="scrollcue" aria-hidden="true">SCROLL ↓</div>
+</div>
+
+<section id="sim">
+  <div class="wrap">
+    <div class="sh rv"><div>
+      <h2 data-ko="시뮬레이션">Simulation</h2>
+      <p data-ko="제어기는 쿼터니언 PD와 피드백 선형화이고, DOB의 L은 50이다. 실측 파라미터로 t = 3 s에 y축으로 0.2 N·m 외란을 가했다. 왼쪽은 DOB를 끈 경우, 오른쪽은 켠 경우이며 Simulink 애니메이션을 0.5배속으로 재생한다.">Quaternion PD + feedback linearization, DOB L = 50. Measured parameters, 0.2 N·m pulse about y at t = 3 s. Left without the observer, right with it. Simulink animation at half speed.</p>
+    </div></div>
+
+    <div class="rv">
+      <figure class="hud simvid"><i class="c1"></i><i class="c2"></i>
+        <video id="simVid" src="sim_crop.mp4" poster="sim_crop_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Simulink animation, DOB off and on side by side"></video>
+      </figure>
+      <div class="deck">
+        <div class="ctrl">
+          <button class="btn" id="play" type="button" aria-pressed="true">PAUSE</button>
+          <span class="seg" role="group" aria-label="Playback speed">
+            <button class="btn spd" type="button" data-s="1" aria-pressed="true">1×</button>
+            <button class="btn spd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+            <button class="btn spd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="plot rv" style="margin-top:26px">
+      <div class="hd"><h3 data-ko="기울기 <span>· deg</span>">Tilt <span>· deg</span></h3>
+        <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span><span><i style="background:var(--pulse)"></i>pulse</span></span></div>
+      <svg id="pTilt" role="img" aria-label="Tilt over time, DOB off and on"></svg>
+    </div>
+  </div>
+</section>
+
+<section id="replay">
+  <div class="wrap">
+    <div class="sh rv"><div>
+      <h2 data-ko="3D 재현">3D replay</h2>
+      <p data-ko="최신 하드웨어 로그(50 Hz, DOB 켬, L = 25.6)로 큐브를 움직인다. 균형점에서 2.4° 벗어난 상태로 손을 놓는 순간부터 시작하며, 드래그하면 회전할 수 있다.">Latest hardware log, 50 Hz, DOB on (L = 25.6). Starts at the release, 2.4° off the pose. Drag to rotate.</p>
+    </div></div>
+
+    <div class="replay rv">
+      <div class="hud stage" id="stage"><i class="c1"></i><i class="c2"></i>
+        <div class="wl" id="wl1" style="color:var(--w1)"><i style="background:var(--w1)"></i><b id="lw1">0</b></div><div class="wl" id="wl2" style="color:var(--w2)"><i style="background:var(--w2)"></i><b id="lw2">0</b></div><div class="wl" id="wl3" style="color:var(--w3)"><i style="background:var(--w3)"></i><b id="lw3">0</b></div><div class="loading" id="loading">LOADING MODEL…</div>
+      </div>
+      <div class="side">
+        <div class="readouts">
+          <div class="ro"><div class="k">t</div><div class="v" id="rT">0.00<small>s</small></div></div>
+          <div class="ro"><div class="k">tilt</div><div class="v" id="rTilt">0.00<small>deg</small></div></div>
+          <div class="ro"><div class="k"><i style="background:var(--w1)"></i>wheel 1</div><div class="v" id="rW1">0<small>rad/s</small></div><div class="bar2"><span id="bW1" style="background:var(--w1)"></span></div></div>
+          <div class="ro"><div class="k"><i style="background:var(--w2)"></i>wheel 2</div><div class="v" id="rW2">0<small>rad/s</small></div><div class="bar2"><span id="bW2" style="background:var(--w2)"></span></div></div>
+          <div class="ro"><div class="k"><i style="background:var(--w3)"></i>wheel 3</div><div class="v" id="rW3">0<small>rad/s</small></div><div class="bar2"><span id="bW3" style="background:var(--w3)"></span></div></div>
+          <div class="ro"><div class="k">state</div><div class="v" id="rState" style="font-size:18px;padding-top:6px">HOLD</div></div>
+        </div>
+        <div class="ctrl">
+          <button class="btn" id="rPlay" type="button" aria-pressed="true">PAUSE</button>
+          <span class="seg" role="group" aria-label="Replay speed">
+            <button class="btn rspd" type="button" data-s="1" aria-pressed="true">1×</button>
+            <button class="btn rspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+            <button class="btn rspd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
+          </span>
+        </div>
+        <div>
+          <input class="scrub" id="rScrub" type="range" min="0" max="1000" value="0" aria-label="Replay time">
+          <div class="marks"><span>−0.5 s · catch</span><span>24 s</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="plot rv" style="margin-top:14px">
+      <div class="hd"><h3 data-ko="휠 속도 <span>· rad/s</span>">Wheel speed <span>· rad/s</span></h3>
+        <span class="legend"><span><i style="background:var(--w1)"></i>wheel 1</span><span><i style="background:var(--w2)"></i>wheel 2</span><span><i style="background:var(--w3)"></i>wheel 3</span></span></div>
+      <svg id="wplot" role="img" aria-label="Wheel speed over time from the hardware log, synced to the replay"></svg>
+    </div>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <div class="sh rv"><div>
+      <h2 data-ko="결과">Results</h2>
+      <p data-ko="기울기에서 요는 제외했다. 하드웨어는 L = 50이다.">Tilt excludes yaw. Hardware runs use L = 50.</p>
+    </div></div>
+    <div class="tablebox rv">
+      <table>
+        <tbody id="mtable"></tbody>
+      </table>
+    </div>
+    <p class="concl rv" data-ko="DOB를 켜면 시뮬레이션에서 덜 기운다. 하드웨어에서는 탭 뒤 반동이 41%, 휠 최고 속도가 33% 줄어든다.">With the DOB, the cube tilts less in simulation. On hardware, a finger tap shows 41% less rebound and 33% lower peak wheel speed.</p>
+  </div>
+</section>
+
+<section id="hardware">
+  <div class="wrap">
+    <div class="sh rv"><div>
+      <h2 data-ko="하드웨어">Hardware</h2>
+      <p data-ko="DOB를 끈 경우와 켠 경우(L = 50)에 손가락으로 한 번씩 쳤다. 손으로 쳐서 최대 기울기는 비슷하지만, 반동과 휠 속도는 차이가 난다. 흰 점선은 정지 상태의 큐브 축이고, 색 선은 로그의 기울기를 10배 키워 그린 것이다.">One finger tap each, DOB off and on (L = 50). The peak is about the same since it is a hand tap; the rebound and wheel spin-up are not. Dashed white is the cube axis at rest; the colored line is the logged tilt, drawn 10× larger.</p>
+    </div></div>
+    <figure class="hud run tap rv"><i class="c1"></i><i class="c2"></i><div class="tapwrap"><video id="tapVid" src="hw_tap_pair_nm.mp4" poster="hw_tap_pair_nm_poster.jpg" muted loop playsinline autoplay preload="auto" aria-label="Finger tap, observer off (left) and on (right)"></video><svg class="axov" viewBox="0 0 1452 720" preserveAspectRatio="none" aria-hidden="true">
+  <g class="ax off" data-bx="380" data-by="605" data-a0="-5.9"><line class="ref"/><path class="arc"/><line class="live"/><circle class="piv" r="7"/></g>
+  <g class="ax on" data-bx="1097" data-by="619" data-a0="-3.3"><line class="ref"/><path class="arc"/><line class="live"/><circle class="piv" r="7"/></g>
+  <text class="mag" x="718" y="704" text-anchor="end">tilt ×10</text><text class="mag" x="1440" y="704" text-anchor="end">tilt ×10</text>
+</svg><span class="vb off" style="left:1.2%"><i></i><span data-ko="DOB 끔">DOB off</span></span><span class="vb on" style="left:51.6%"><i></i><span data-ko="DOB 켬">DOB on</span></span><span class="vs" style="right:51.6%">1× real time</span><span class="vs" style="right:1.2%">1× real time</span></div>
+      <figcaption class="pair ro2"><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT0">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW0">0 rad/s</b></span><span><span class="rk" data-ko="θ 기울기">θ tilt</span><b class="rv2" id="roT1">0.00°</b></span><span><span class="rk" data-ko="ω 휠 속도">ω wheel</span><b class="rv2" id="roW1">0 rad/s</b></span></figcaption></figure>
+    <div class="deck rv">
+      <div class="ctrl">
+        <button class="btn" id="tPlay" type="button" aria-pressed="true">PAUSE</button>
+        <span class="seg" role="group" aria-label="Playback speed">
+          <button class="btn tspd" type="button" data-s="1" aria-pressed="true">1×</button>
+          <button class="btn tspd" type="button" data-s="0.5" aria-pressed="false">0.5×</button>
+          <button class="btn tspd" type="button" data-s="0.25" aria-pressed="false">0.25×</button>
+        </span>
+      </div>
+    </div>
+    <div class="plot rv" style="margin:14px 0 30px">
+      <div class="hd"><h3 data-ko="기울기 <span>· deg</span>">Tilt <span>· deg</span></h3>
+        <span class="legend"><span><i style="background:var(--off)"></i>DOB off</span><span><i style="background:var(--on)"></i>DOB on</span><span><i style="background:var(--pulse)"></i>tap</span></span></div>
+      <svg id="pTap" role="img" aria-label="Tilt after the finger tap, observer off and on, synced to the videos"></svg>
+    </div>
+    <div class="rig rv">
+      <div>
+        <h3 data-ko="구성">Build</h3>
+        <dl class="spec">
+          <div><dt data-ko="제어보드">Controller</dt><dd>ESP32, 5 ms loop</dd></div>
+          <div><dt>IMU</dt><dd>MPU-6050</dd></div>
+          <div><dt data-ko="모터">Motors</dt><dd>Nidec 24H × 3</dd></div>
+          <div><dt data-ko="배터리">Battery</dt><dd>3S 11.1 V, 450 mAh</dd></div>
+          <div><dt data-ko="총 질량">Total mass</dt><dd>1019.9 g</dd></div>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap"><span></span><span>SIMULATION: MATLAB/SIMULINK · HARDWARE: ESP32</span></div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  const css = getComputedStyle(document.documentElement);
+  const V = n => css.getPropertyValue(n).trim();
+  const C = { on: V('--on'), off: V('--off'), muted: V('--muted'), pulse: V('--pulse'), bg: V('--bg'), w: [V('--w1'), V('--w2'), V('--w3')] };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // bar, reveal, count-up
+  const bar = document.getElementById('bar');
+  const onScroll = () => bar.classList.toggle('solid', scrollY > 40);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { threshold: .12 });
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const to = +el.dataset.count, dp = +(el.dataset.dp || 0), suf = el.dataset.suffix || '';
+    const fmt = v => (v < 0 ? '−' : '') + Math.abs(v).toFixed(dp) + suf;
+    if (reduce) { el.textContent = fmt(to); return; }
+    const t0 = performance.now() + 300, dur = 1400;
+    (function tick(now) {
+      const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = fmt(to * e);
+      if (k < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  });
+
+  // results table
+  const KO = { 'Simulation · 0.2 N·m, 0.1 s pulse': '시뮬레이션 · 0.2 N·m, 0.1 s 외란', 'Max tilt': '최대 기울기', 'Final tilt': '최종 기울기', 'Max torque': '최대 토크', 'Max wheel speed': '최대 휠 속도', 'Hardware · finger tap': '하드웨어 · 손가락 탭', 'Peak tilt': '최대 기울기', 'Rebound': '반동', 'Wheel peak': '휠 최고 속도' };
+  let LANG = 'en';
+  const ROWS = [['Simulation · 0.2 N·m, 0.1 s pulse'], ['Max tilt', 1.82, 0.82, '°', 2], ['Final tilt', 0.12, 0.08, '°', 2, 't = 6 s'], ['Max torque', 0.242, 0.250, '', 3, 'N·m'], ['Max wheel speed', 115.9, 98.4, '', 1, 'rad/s'],
+    ['Hardware · finger tap'], ['Peak tilt', 1.43, 1.42, '°', 2], ['Rebound', 0.99, 0.58, '°', 2], ['Wheel peak', 86, 58, '', 0, 'rad/s']];
+  function drawRows() {
+    const tb = document.getElementById('mtable'); tb.innerHTML = '';
+    const L = n => LANG === 'ko' ? (KO[n] || n) : n;
+    ROWS.forEach(([n, x, y, u, d, unit]) => {
+      const tr = document.createElement('tr');
+      if (x === undefined) { tr.className = 'grp'; const ko = LANG === 'ko'; tr.innerHTML = `<th>${L(n)}</th><th class="off">${ko ? '끔' : 'Off'}</th><th class="on">${ko ? '켬' : 'On'}</th><th>Δ</th>`; tb.appendChild(tr); return; }
+      const ch = (y - x) / x * 100, flat = Math.abs(ch) < 1.5;
+      tr.innerHTML = `<td>${L(n)}${unit ? ` <small class="unit">${unit}</small>` : ''}</td><td class="mono">${x.toFixed(d)}${u}</td><td class="mono">${y.toFixed(d)}${u}</td><td class="chg ${flat ? 'flat' : (ch < 0 ? 'on' : '')}">${flat ? '≈ 0%' : (ch > 0 ? '+' : '−') + Math.abs(ch).toFixed(0) + '%'}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+  drawRows();
+  // language toggle
+  const langBtn = document.getElementById('langBtn'), TR = [...document.querySelectorAll('[data-ko]')];
+  TR.forEach(e => e.dataset.en = e.innerHTML);
+  function setLang(l) {
+    LANG = l; document.documentElement.lang = l;
+    TR.forEach(e => e.innerHTML = l === 'ko' ? e.dataset.ko : e.dataset.en);
+    langBtn.textContent = l === 'ko' ? 'EN' : '한국어'; drawRows();
+  }
+  langBtn.addEventListener('click', () => setLang(LANG === 'ko' ? 'en' : 'ko'));
+  try { localStorage.removeItem('cubli-lang'); } catch (e) {}
+
+
+  // ---------- progressive plots ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, a, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+  function makePlot(svg, cfg) {
+    const H = cfg.h || 200, m = { l: 48, r: 12, t: 10, b: 24 };
+    const T = cfg.t, N = T.length, T0 = T[0], T1 = T[N - 1];
+    let W = 600, sx, sy, paths, dots, head, last = -1;
+    function build() {
+      W = Math.max(280, Math.round(svg.getBoundingClientRect().width) || 600);
+      svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.innerHTML = '';
+      sx = t => m.l + (t - T0) / (T1 - T0) * (W - m.l - m.r);
+      sy = v => H - m.b - (v - cfg.y0) / (cfg.y1 - cfg.y0) * (H - m.t - m.b);
+      if (cfg.band) el('rect', { x: sx(cfg.band[0]), y: m.t, width: sx(cfg.band[1]) - sx(cfg.band[0]), height: H - m.t - m.b, fill: C.pulse, opacity: .22 }, svg);
+      const gg = el('g', { class: 'grid' }, svg), ga = el('g', { class: 'axis' }, svg);
+      cfg.yt.forEach(v => { el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v) }, gg); el('text', { x: m.l - 8, y: sy(v) + 3.5, 'text-anchor': 'end' }, ga).textContent = v; });
+      cfg.xt.forEach(t => { if (t >= T0 - 1e-6 && t <= T1 - (T1 - T0) * 0.04) el('text', { x: sx(t), y: H - 6, 'text-anchor': 'middle' }, ga).textContent = t; });
+      el('text', { x: W - m.r, y: H - 6, 'text-anchor': 'end' }, ga).textContent = 's';
+      (cfg.hlines || []).forEach(v => el('line', { x1: m.l, x2: W - m.r, y1: sy(v), y2: sy(v), stroke: C.muted, 'stroke-dasharray': '4 4', 'stroke-width': 1 }, svg));
+      cfg.series.forEach(s => { let d = ''; for (let i = 0; i < N; i++) d += (i ? 'L' : 'M') + sx(T[i]).toFixed(1) + ' ' + sy(s.y[i]).toFixed(1); el('path', { d, fill: 'none', stroke: s.color, 'stroke-width': s.w || 2, 'stroke-linejoin': 'round', opacity: .22 }, svg); });
+      paths = cfg.series.map(s => el('path', { fill: 'none', stroke: s.color, 'stroke-width': s.w || 2, 'stroke-linejoin': 'round' }, svg));
+      head = el('line', { stroke: '#ffffff', 'stroke-width': 1, opacity: .5, y1: m.t, y2: H - m.b }, svg);
+      dots = cfg.series.map(s => el('circle', { r: 4, fill: s.color, stroke: C.bg, 'stroke-width': 2 }, svg));
+      const k = last; last = -1; draw(Math.max(0, k));
+    }
+    function draw(k) {
+      if (k === last) return; last = k;
+      cfg.series.forEach((s, j) => {
+        let d = ''; for (let i = 0; i <= k; i++) d += (i ? 'L' : 'M') + sx(T[i]).toFixed(1) + ' ' + sy(s.y[i]).toFixed(1);
+        paths[j].setAttribute('d', d);
+        dots[j].setAttribute('cx', sx(T[k])); dots[j].setAttribute('cy', sy(s.y[k]));
+      });
+      head.setAttribute('x1', sx(T[k])); head.setAttribute('x2', sx(T[k]));
+    }
+    function tAt(clientX) {
+      const r = svg.getBoundingClientRect(), px = (clientX - r.left) / r.width * W;
+      return Math.max(T0, Math.min(T1, T0 + (px - m.l) / (W - m.l - m.r) * (T1 - T0)));
+    }
+    build();
+    let rsz; addEventListener('resize', () => { clearTimeout(rsz); rsz = setTimeout(build, 120); });
+    return { draw, tAt };
+  }
+  function dragSeek(svg, onSeek, onStart, onEnd) {
+    let dragging = false;
+    svg.addEventListener('pointerdown', ev => { dragging = true; onStart(); svg.setPointerCapture(ev.pointerId); onSeek(ev.clientX); });
+    svg.addEventListener('pointermove', ev => { if (dragging) onSeek(ev.clientX); });
+    svg.addEventListener('pointerup', () => { dragging = false; onEnd(); });
+  }
+
+  // ---------- 01 simulation: Simulink video + tilt plot ----------
+  const vid = document.getElementById('simVid');
+  let sPlaying = !reduce;
+  const playBtn = document.getElementById('play');
+  const sSync = () => { playBtn.textContent = sPlaying ? 'PAUSE' : 'PLAY'; playBtn.setAttribute('aria-pressed', sPlaying); };
+  const applyPlay = () => { if (sPlaying) { const p = vid.play(); if (p && p.catch) p.catch(() => {}); } else vid.pause(); };
+  if (reduce) vid.removeAttribute('autoplay');
+  playBtn.addEventListener('click', () => { sPlaying = !sPlaying; applyPlay(); sSync(); }); sSync();
+  document.querySelectorAll('.spd').forEach(b => b.addEventListener('click', () => {
+    vid.playbackRate = +b.dataset.s; document.querySelectorAll('.spd').forEach(x => x.setAttribute('aria-pressed', x === b));
+  }));
+  // the Simulink clip runs t = 2.80 s ... at half speed: sim t = 2.80 + 0.5 * video time
+  let sp = null, ST = null;
+  fetch('sim2.json').then(r => r.json()).then(J => {
+    const idx = J.t.map((x, i) => i).filter(i => J.t[i] >= 2.8 - 1e-6 && J.t[i] <= 4.42);
+    ST = idx.map(i => J.t[i]);
+    sp = makePlot(document.getElementById('pTilt'), { t: ST, y0: 0, y1: 2, yt: [0, 0.5, 1, 1.5, 2], xt: [3, 3.5, 4], band: [3.0, 3.1], h: 220,
+      series: [{ y: idx.map(i => J.off.tilt2[i]), color: C.off }, { y: idx.map(i => J.on.tilt2[i]), color: C.on }] });
+    let was = false;
+    dragSeek(document.getElementById('pTilt'), x => { vid.currentTime = Math.max(0, (sp.tAt(x) - 2.8) / 0.5); },
+      () => { was = sPlaying; sPlaying = false; applyPlay(); sSync(); }, () => { sPlaying = was; applyPlay(); sSync(); });
+  }).catch(() => {});
+  function simPlotTick() {
+    if (!sp) return;
+    const t = 2.8 + 0.5 * (vid.currentTime || 0);
+    let lo = 0, hi = ST.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (ST[md] <= t) lo = md; else hi = md; }
+    sp.draw(lo);
+  }
+  // ---------- 04 hardware tap: two clips + one synced plot ----------
+  const vA = document.getElementById('tapVid'), vB = vA, tBtn = document.getElementById('tPlay');
+  let tPlaying = !reduce, tp = null, TT = null, GA = null, GW = null;
+  const RO = [0, 1].map(j => ({ t: document.getElementById('roT' + j), w: document.getElementById('roW' + j) }));
+  const AX = [...document.querySelectorAll('.axov .ax')].map(g => ({ bx: +g.dataset.bx, by: +g.dataset.by, a0: +g.dataset.a0, ref: g.querySelector('.ref'), live: g.querySelector('.live'), arc: g.querySelector('.arc'), piv: g.querySelector('.piv') }));
+  const AXL = 500, AXM = 10;
+  function axDraw(g, tilt) {
+    const r = d => d * Math.PI / 180, a0 = r(g.a0), a1 = r(g.a0 - tilt * AXM);
+    const P = a => [g.bx + AXL * Math.sin(a), g.by - AXL * Math.cos(a)];
+    const [x0, y0] = P(a0), [x1, y1] = P(a1);
+    g.ref.setAttribute('x1', g.bx); g.ref.setAttribute('y1', g.by); g.ref.setAttribute('x2', x0.toFixed(1)); g.ref.setAttribute('y2', y0.toFixed(1));
+    g.live.setAttribute('x1', g.bx); g.live.setAttribute('y1', g.by); g.live.setAttribute('x2', x1.toFixed(1)); g.live.setAttribute('y2', y1.toFixed(1));
+    g.piv.setAttribute('cx', g.bx); g.piv.setAttribute('cy', g.by);
+    const R = 150, A = a => [g.bx + R * Math.sin(a), g.by - R * Math.cos(a)], [ax0, ay0] = A(a0), [ax1, ay1] = A(a1);
+    g.arc.setAttribute('d', `M${ax0.toFixed(1)} ${ay0.toFixed(1)} A${R} ${R} 0 0 0 ${ax1.toFixed(1)} ${ay1.toFixed(1)}`);
+  }
+  AX.forEach(g => axDraw(g, 0));
+  if (reduce) [vA, vB].forEach(v => v.removeAttribute('autoplay'));
+  const tSync = () => { tBtn.textContent = tPlaying ? 'PAUSE' : 'PLAY'; tBtn.setAttribute('aria-pressed', tPlaying); };
+  const tApply = () => [vA, vB].forEach(v => { if (tPlaying) { const p = v.play(); if (p && p.catch) p.catch(() => {}); } else v.pause(); });
+  tBtn.addEventListener('click', () => { tPlaying = !tPlaying; tApply(); tSync(); }); tSync();
+  document.querySelectorAll('.tspd').forEach(b => b.addEventListener('click', () => {
+    [vA, vB].forEach(v => v.playbackRate = +b.dataset.s); document.querySelectorAll('.tspd').forEach(x => x.setAttribute('aria-pressed', x === b));
+    document.querySelectorAll('.vs').forEach(x => x.textContent = b.dataset.s + '× real time');
+  }));
+  fetch('hw_tap.json').then(r => r.json()).then(J => {
+    TT = J.off.t;
+    const onI = TT.map(t => { const a = J.on.t; let i = 0; while (i < a.length - 2 && a[i + 1] < t) i++; const f = Math.max(0, Math.min(1, (t - a[i]) / ((a[i + 1] - a[i]) || 1))); return J.on.tilt[i] + f * (J.on.tilt[i + 1] - J.on.tilt[i]); });
+    tp = makePlot(document.getElementById('pTap'), { t: TT, y0: 0, y1: 1.6, yt: [0, 0.5, 1, 1.5], xt: [0, 1, 2, 3, 4, 5, 6, 7], band: [3.24, 3.34], h: 220,
+      series: [{ y: J.off.tilt, color: C.off }, { y: onI, color: C.on }] });
+    GA = [J.off.tilt, onI];
+    const onW = TT.map(t => { const a = J.on.t; let i = 0; while (i < a.length - 2 && a[i + 1] < t) i++; return J.on.w[i]; });
+    GW = [J.off.w, onW];
+    let was = false;
+    dragSeek(document.getElementById('pTap'), x => { const t = tp.tAt(x); vA.currentTime = t; vB.currentTime = t; },
+      () => { was = tPlaying; tPlaying = false; tApply(); tSync(); }, () => { tPlaying = was; tApply(); tSync(); });
+  }).catch(() => {});
+  // ---------- 02 controller: four synced signals ----------
+  let CT = null, cPl = [], cT = 2.6, cHold = false;
+  const cClk = document.getElementById('cClk');
+
+  function ctlTick(dt) {
+    if (!CT || !cClk) return;
+    const T1 = CT[CT.length - 1];
+    if (!cHold && !reduce) { cT += dt * 0.5; if (cT > T1) cT = CT[0]; }
+    let lo = 0, hi = CT.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (CT[md] <= cT) lo = md; else hi = md; }
+    cPl.forEach(p => p.draw(lo)); cClk.textContent = CT[lo].toFixed(2);
+  }
+  function simTick(dt) {
+    ctlTick(dt); simPlotTick();
+    if (!tp) return;
+    const t = vA.currentTime || 0;
+    if (!vB.seeking && Math.abs(vB.currentTime - t) > 0.08) vB.currentTime = t;
+    let lo = 0, hi = TT.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (TT[md] <= t) lo = md; else hi = md; }
+    tp.draw(lo);
+    if (GA) RO.forEach((r, j) => { r.t.textContent = GA[j][lo].toFixed(2) + '°'; r.w.textContent = Math.round(GW[j][lo]) + ' rad/s'; axDraw(AX[j], GA[j][lo]); });
+  }
+
+  // ---------- three.js common ----------
+  const S = 0.01;                                   // mm -> scene units
+  const HALF = 76, PLATE = 72.5;
+  // MATLAB world is z-up, three.js is y-up: rotate -90 deg about x
+  const qC = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  const qu = [0.88807, 0.32506, -0.32506, 0]; { const n = Math.hypot(...qu); for (let i = 0; i < 4; i++) qu[i] /= n; }
+  const toThree = (q, out) => (out || new THREE.Quaternion()).set(q[1], q[2], q[3], q[0]).premultiply(qC);
+  const QU = toThree(qu);
+
+  function decode(b64) {
+    const bin = atob(b64), u8 = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    const i16 = new Int16Array(u8.buffer), f = new Float32Array(i16.length);
+    for (let i = 0; i < i16.length; i++) f[i] = i16[i] / 20;
+    return f;
+  }
+  function geo(arr) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(arr, 3)); g.computeVertexNormals(); return g; }
+  function place(mesh, dir, pos) {
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir.clone().normalize());
+    mesh.position.copy(pos).multiplyScalar(S); mesh.scale.setScalar(S);
+  }
+  const mWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5, metalness: 0.0 });
+  // body frame as in the Simulink model: pivot corner at the origin, cube along +x,+y,+z,
+  // the three wheel plates on the faces that meet at the pivot
+  function buildCube(G, shadows) {
+    const body = new THREE.Group(), wl = [];
+    const axes = [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, 1)];
+    axes.forEach(a => {
+      const rws = new THREE.Mesh(G.rw, mWhite); place(rws, a.clone(), a.clone().multiplyScalar(-PLATE)); rws.castShadow = shadows; body.add(rws);
+      const sd = new THREE.Mesh(G.side, mWhite); place(sd, a.clone(), a.clone().multiplyScalar(PLATE)); sd.castShadow = shadows; body.add(sd);
+      const hd = new THREE.Mesh(G.mh, mWhite); place(hd, a.clone(), a.clone().multiplyScalar(-55)); body.add(hd);
+      const holder = new THREE.Group();
+      holder.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), a.clone());
+      holder.position.copy(a).multiplyScalar(-50 * S);
+      const wm = new THREE.Mesh(G.wheel, mWhite); wm.scale.setScalar(S); wm.castShadow = shadows;
+      holder.add(wm); body.add(holder); wl.push(wm);
+    });
+    body.position.set(HALF * S, HALF * S, HALF * S);
+    const pv = new THREE.Group(); pv.add(body); pv.quaternion.copy(QU);
+    return { pivot: pv, wheels: wl };
+  }
+  function outlineBox(color, opacity) {
+    const e = new THREE.EdgesGeometry(new THREE.BoxGeometry(2 * HALF * S, 2 * HALF * S, 2 * HALF * S));
+    const ln = new THREE.LineSegments(e, new THREE.LineBasicMaterial({ color, transparent: true, opacity }));
+    ln.position.set(HALF * S, HALF * S, HALF * S);
+    const g = new THREE.Group(); g.add(ln); g.quaternion.copy(QU); return g;
+  }
+  function lights(scene, strong) {
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1c22, strong ? 0.95 : 0.6));
+    const key = new THREE.DirectionalLight(0xffffff, 1.05); key.position.set(3, 6, 4); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.5); fill.position.set(0, -1.5, 6); scene.add(fill);
+    const rc = new THREE.DirectionalLight(0x00fff7, 0.55); rc.position.set(-5, 1.5, -3); scene.add(rc);
+    const rp = new THREE.DirectionalLight(0xff1e9d, 0.35); rp.position.set(5, 0.5, -4); scene.add(rp);
+    return key;
+  }
+  function softShadow(scene, size) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 128;
+    const cx = cv.getContext('2d'), gr = cx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    gr.addColorStop(0, 'rgba(0,0,0,0.6)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); cx.fillStyle = gr; cx.fillRect(0, 0, 128, 128);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(size, size), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, depthWrite: false }));
+    m.rotation.x = -Math.PI / 2; m.position.y = 0.002; scene.add(m); return m;
+  }
+  function makeRenderer(host) {
+    const r = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    r.setPixelRatio(Math.min(devicePixelRatio, 2)); r.outputEncoding = THREE.sRGBEncoding;
+    host.appendChild(r.domElement); return r;
+  }
+  function fit(r, cam, host) { const w = host.clientWidth, h = host.clientHeight; r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); }
+
+  // ---------- hero: one cube, slow turn ----------
+  const heroBox = document.getElementById('heroCube');
+  let hero = null;
+  function initHero(G) {
+    const r = makeRenderer(heroBox), sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(18, 1, 0.1, 100);
+    cam.position.set(0, 1.4, 13.0); cam.lookAt(0, 1.3, 0);
+    lights(sc, true);
+    const c = buildCube(G, false), turn = new THREE.Group(); turn.add(c.pivot); sc.add(turn);
+    turn.add(outlineBox(new THREE.Color(C.on), 0.7));          // upright pose, stays put while the cube gets knocked
+    softShadow(sc, 1.6);
+    hero = { r, sc, cam, turn, pivot: c.pivot, wheels: c.wheels, t: 1.2 }; fit(r, cam, heroBox);
+    addEventListener('resize', () => fit(r, cam, heroBox));
+    if (window.ResizeObserver) new ResizeObserver(() => fit(r, cam, heroBox)).observe(heroBox);
+  }
+  const HW = [9, -6, 4], hqW = new THREE.Quaternion(), hAx = new THREE.Vector3(1, 0, 0.35).normalize();
+  function heroTick(dt) {
+    if (!hero) return;
+    if (!reduce) {
+      hero.turn.rotation.y += dt * 0.12; hero.t += dt;
+      // every 9 s: a small knock, the cube tips and settles back onto the outline
+      const ph = hero.t % 9, ang = ph < 4 ? 0.08 * Math.exp(-ph / 0.55) * Math.sin(2 * Math.PI * ph / 0.8) : 0;
+      hqW.setFromAxisAngle(hAx, ang); hero.pivot.quaternion.copy(hqW).multiply(QU);
+      const kick = ph < 1.5 ? 1 + 6 * Math.exp(-ph / 0.4) : 1;
+      for (let i = 0; i < 3; i++) hero.wheels[i].rotation.z += HW[i] * dt * kick;
+    }
+    hero.r.render(hero.sc, hero.cam);
+  }
+
+  // ---------- 02 hardware replay ----------
+  const stage = document.getElementById('stage');
+  const R = { t: [], tilt: [], e: [], w: [], armed: [] };
+  let rN = 0, rTime = 0, rPlaying = !reduce, rSpeed = 1, rMag = 1, wp = null, rep = null;
+  const rPlay = document.getElementById('rPlay'), scrub = document.getElementById('rScrub');
+  const out = { t: document.getElementById('rT'), tilt: document.getElementById('rTilt'), w: [1, 2, 3].map(i => document.getElementById('rW' + i)), b: [1, 2, 3].map(i => document.getElementById('bW' + i)), st: document.getElementById('rState') };
+  function rSync() { rPlay.textContent = rPlaying ? 'PAUSE' : 'PLAY'; rPlay.setAttribute('aria-pressed', rPlaying); }
+  rPlay.addEventListener('click', () => { rPlaying = !rPlaying; rSync(); }); rSync();
+  document.querySelectorAll('.rspd').forEach(b => b.addEventListener('click', () => { rSpeed = +b.dataset.s; document.querySelectorAll('.rspd').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  document.querySelectorAll('.rmag').forEach(b => b.addEventListener('click', () => { rMag = +b.dataset.m; document.querySelectorAll('.rmag').forEach(x => x.setAttribute('aria-pressed', x === b)); }));
+  scrub.addEventListener('input', () => { if (!rN) return; rTime = R.t[0] + scrub.value / 1000 * (R.t[rN - 1] - R.t[0]); });
+  const idxAt = t => { let lo = 0, hi = rN - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (R.t[md] <= t) lo = md; else hi = md; } return lo; };
+  function initReplay(G) {
+    const r = makeRenderer(stage); r.shadowMap.enabled = true;
+    const sc = new THREE.Scene(), cam = new THREE.PerspectiveCamera(18, 4 / 3, 0.1, 100);
+    const key = lights(sc, false); key.intensity = 0.7; key.castShadow = true; key.shadow.mapSize.set(1024, 1024);
+    Object.assign(key.shadow.camera, { left: -3, right: 3, top: 3, bottom: -3 });
+    const floor = new THREE.Mesh(new THREE.CircleGeometry(4, 64), new THREE.ShadowMaterial({ opacity: 0.45 }));
+    floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; sc.add(floor);
+    const grid = new THREE.GridHelper(8, 32, 0x2b303b, 0x1a1d24); grid.material.transparent = true; grid.material.opacity = 0.6; sc.add(grid);
+    const c = buildCube(G, true); sc.add(c.pivot);
+    const mRep = new THREE.MeshStandardMaterial({ color: 0x80858e, roughness: 0.85, metalness: 0.0 });
+    c.pivot.traverse(o => { if (o.isMesh) o.material = mRep; });
+    sc.children.forEach(o => { if (o.isHemisphereLight) o.intensity = 0.4; if (o.isDirectionalLight && o !== key) o.intensity *= 0.7; });
+    sc.add(outlineBox(0xc3c8d1, 0.5));
+    const H = 2 * HALF * S * Math.sqrt(3);
+    const ctr = new THREE.Vector3(HALF, HALF, HALF).multiplyScalar(S), fr = new THREE.Vector3(2 * HALF, 0, 2 * HALF).multiplyScalar(S);
+    // look along the body diagonal through the corner next to the top: all three wheel faces in view
+    const cW = ctr.clone().applyQuaternion(QU);
+    const dir = fr.sub(ctr).applyQuaternion(QU).normalize();
+    cam.position.copy(dir).multiplyScalar(12.8).add(cW);
+    const ctl = new THREE.OrbitControls(cam, r.domElement);
+    ctl.target.copy(cW); ctl.enableDamping = true; ctl.enablePan = false; ctl.minDistance = 6; ctl.maxDistance = 20;
+    rep = { r, sc, cam, ctl, pivot: c.pivot, wheels: c.wheels }; fit(r, cam, stage);
+    addEventListener('resize', () => fit(r, cam, stage));
+    document.getElementById('loading').remove();
+  }
+  const tmpV = new THREE.Vector3(), tmpQ = new THREE.Quaternion();
+  function repTick(dt) {
+    if (!rN) return;
+    if (rPlaying) { rTime += dt * rSpeed; if (rTime > R.t[rN - 1]) rTime = R.t[0]; }
+    const k = idxAt(rTime);
+    scrub.value = Math.round((rTime - R.t[0]) / (R.t[rN - 1] - R.t[0]) * 1000);
+    out.t.innerHTML = R.t[k].toFixed(2) + '<small>s</small>';
+    out.tilt.innerHTML = R.tilt[k].toFixed(2) + '<small>deg</small>';
+    for (let i = 0; i < 3; i++) {
+      const w = R.w[k][i];
+      out.w[i].innerHTML = w.toFixed(0) + '<small>rad/s</small>';
+      const f = Math.min(1, Math.abs(w) / 120) * 50;
+      out.b[i].style.width = f + '%'; out.b[i].style.left = (w >= 0 ? 50 : 50 - f) + '%';
+    }
+    out.st.textContent = R.armed[k] ? 'BALANCING' : 'HOLD';
+    for(let i=0;i<3;i++) document.getElementById('lw'+(i+1)).textContent=R.w[k][i].toFixed(0);
+    if (wp) wp.draw(k);
+    if (rep) {
+      const e = R.e[k];
+      tmpV.set(e[0], e[1], e[2]).multiplyScalar(Math.PI / 180 * rMag);
+      const ang = tmpV.length();
+      if (ang > 1e-9) tmpQ.setFromAxisAngle(tmpV.normalize(), ang); else tmpQ.identity();
+      rep.pivot.quaternion.copy(QU).multiply(tmpQ);
+      if (rPlaying) for (let i = 0; i < 3; i++) rep.wheels[i].rotation.z += R.w[k][i] * dt * rSpeed * 0.25;
+      rep.ctl.update(); rep.r.render(rep.sc, rep.cam);
+      { const W=stage.clientWidth, Hh=stage.clientHeight, bb=new THREE.Box3(), pv=new THREE.Vector3(), cv=new THREE.Vector3();
+        new THREE.Box3().setFromObject(rep.pivot).getCenter(cv); cv.project(rep.cam); const cx=(cv.x*.5+.5)*W, cy=(-cv.y*.5+.5)*Hh;
+        let svg=document.getElementById('wlsvg'); if(!svg){svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.id='wlsvg';svg.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none');stage.appendChild(svg);for(let i=0;i<3;i++){const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('stroke',['#FF1E9D','#00FFF7','#ffffff'][i]);l.setAttribute('stroke-width','1');l.setAttribute('opacity','.35');svg.appendChild(l);const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r','3');c.setAttribute('fill',['#FF1E9D','#00FFF7','#ffffff'][i]);svg.appendChild(c);}}
+        const Rr=Math.min(W,Hh)*0.36, mob=W<560, P=[];
+        for(let i=0;i<3;i++){ bb.setFromObject(rep.wheels[i]).getCenter(pv); pv.project(rep.cam); P.push([(pv.x*.5+.5)*W,(-pv.y*.5+.5)*Hh,i]); }
+        if(mob){ const o=P.slice().sort((p,q)=>p[0]-q[0]); const slot={}; slot[o[0][2]]=[16,Hh*0.84,'l']; slot[o[2][2]]=[W-16,Hh*0.84,'r']; slot[o[1][2]]=[W/2,Hh-10,'b'];
+          for(const [x,y,i] of P){ const [lx,ly,side]=slot[i], ln=svg.children[i*2], dt=svg.children[i*2+1], el=document.getElementById('wl'+(i+1));
+            const ax=side==='l'?lx+el.offsetWidth/2:side==='r'?lx-el.offsetWidth/2:lx, ay=side==='b'?ly-el.offsetHeight-6:ly-el.offsetHeight/2-6;
+            ln.setAttribute('x1',x);ln.setAttribute('y1',y);ln.setAttribute('x2',ax);ln.setAttribute('y2',ay); dt.setAttribute('cx',x);dt.setAttribute('cy',y);
+            el.style.alignItems=side==='l'?'flex-start':side==='r'?'flex-end':'center'; el.style.left=lx+'px'; el.style.top=ly+'px'; el.style.transform=side==='l'?'translate(0,-50%)':side==='r'?'translate(-100%,-50%)':'translate(-50%,-100%)'; }
+        } else
+        for(let i=0;i<3;i++){ bb.setFromObject(rep.wheels[i]).getCenter(pv); pv.project(rep.cam); const x=(pv.x*.5+.5)*W, y=(-pv.y*.5+.5)*Hh; let dx=x-cx, dy=y-cy; const n=Math.hypot(dx,dy)||1; dx/=n; dy/=n; const lx=cx+dx*Rr, ly=cy+dy*Rr;
+          const ln=svg.children[i*2], dt=svg.children[i*2+1]; ln.setAttribute('x1',x);ln.setAttribute('y1',y);ln.setAttribute('x2',lx);ln.setAttribute('y2',ly); dt.setAttribute('cx',x);dt.setAttribute('cy',y);
+          const el=document.getElementById('wl'+(i+1)), ew=el.offsetWidth; const lxc=dx<0?Math.max(lx,ew+12):Math.min(lx,W-ew-12); ln.setAttribute('x2',lxc); el.style.left=lxc.toFixed(0)+'px'; el.style.top=ly.toFixed(0)+'px'; el.style.transform=dx<0?'translate(calc(-100% - 6px),-50%)':'translate(6px,-50%)'; } }
+    }
+  }
+  fetch('replay.json').then(r => r.json()).then(J => {
+    R.t = J.t; R.tilt = J.tilt; R.e = J.e; R.w = J.w; R.armed = J.armed; rN = R.t.length; rTime = R.t[0];
+    wp = makePlot(document.getElementById('wplot'), { t: R.t, y0: -120, y1: 120, yt: [-120, -60, 0, 60, 120], xt: [0, 4, 8, 12, 16, 20, 24], h: 200,
+      series: [0, 1, 2].map(i => ({ y: R.w.map(r => r[i]), color: C.w[i] })) });
+    let was = false;
+    dragSeek(document.getElementById('wplot'), x => { rTime = wp.tAt(x); }, () => { was = rPlaying; rPlaying = false; rSync(); }, () => { rPlaying = was; rSync(); });
+  }).catch(() => { const l = document.getElementById('loading'); if (l) l.textContent = 'LOG UNAVAILABLE'; });
+
+  // ---------- load model, run ----------
+  fetch('models.json').then(r => r.json()).then(MJ => {
+    const G = { side: geo(decode(MJ.side)), rw: geo(decode(MJ.rwside)), wheel: geo(decode(MJ.wheel)), mh: geo(decode(MJ.motorholder)) };
+    initHero(G); initReplay(G);
+  }).catch(() => {
+    ['loading'].forEach(id => { const l = document.getElementById(id); if (l) l.textContent = 'MODEL UNAVAILABLE'; });
+  });
+  let last = performance.now();
+  (function loop(now) {
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    heroTick(dt); simTick(dt); repTick(dt);
+    requestAnimationFrame(loop);
+  })(performance.now());
+})();
+</script>
+
+</body></html>
